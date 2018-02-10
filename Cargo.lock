@@ -1,0 +1,4 @@
+[[package]]
+name = "rust_proc_gen"
+version = "0.1.0"
+
