@@ -1,0 +1,117 @@
+use std::f64;
+
+use cgmath::Vector2;
+use rand;
+use rand::distributions::{self, IndependentSample};
+
+use grid::Grid;
+use interpolate::{self, InterpolationFunction, Lerp};
+
+pub trait GradientBuilder {
+    type Output;
+
+    fn make_gradient(&mut self) -> Self::Output;
+}
+
+#[derive(Clone, Debug)]
+pub struct Perlin<P: InterpolationFunction> {
+    grid: Grid<Vector2<f64>>,
+    interp: P,
+}
+
+#[derive(Debug, Clone)]
+pub struct RandomGradientBuilder2d<R: rand::Rng> {
+    rng: R,
+    distribution: distributions::Range<f64>,
+}
+
+impl<P> Perlin<P>
+where
+    P: InterpolationFunction,
+{
+    pub fn new<T>(dimensions: (u32, u32), builder: &mut T, interp: P) -> Perlin<P>
+    where
+        T: GradientBuilder<Output = Vector2<f64>>,
+    {
+        let (width, height) = dimensions;
+        let size = ((width + 1) as usize) * ((height + 1) as usize);
+
+        let data = (0..size).map(|_| builder.make_gradient()).collect();
+
+        Perlin {
+            grid: Grid::with_data(width + 1, height + 1, data),
+            interp: interp,
+        }
+    }
+
+    pub fn get_value(&self, pos: Vector2<f64>) -> f64 {
+        let x_0 = pos.x as usize;
+        let x_1 = pos.x.ceil() as usize;
+        let y_0 = pos.y as usize;
+        let y_1 = pos.y.ceil() as usize;
+
+        let rel_x = pos.x - pos.x.floor();
+        let rel_y = pos.y - pos.y.floor();
+        let rel_pos = Vector2::new(rel_x, rel_y);
+
+        let gradients = [
+            self.grid[(x_0, y_0)],
+            self.grid[(x_1, y_0)],
+            self.grid[(x_0, y_1)],
+            self.grid[(x_1, y_1)],
+        ];
+        let rel_points = [
+            Vector2::new(0.0, 0.0),
+            Vector2::new(1.0, 0.0),
+            Vector2::new(0.0, 1.0),
+            Vector2::new(1.0, 1.0),
+        ];
+        let distances = rel_points.iter().map(|x| rel_pos - x);
+
+        let values: Vec<_> = distances
+            .zip(gradients.iter())
+            .map(|(d, &g)| d.perp_dot(g))
+            .collect();
+
+        let interp_x = self.interp.interpolation_value(rel_x);
+        let interp_y = self.interp.interpolation_value(rel_y);
+
+        let p1 = Lerp::lerp(values[0], values[1], interp_x);
+        let p2 = Lerp::lerp(values[2], values[3], interp_x);
+
+        Lerp::lerp(p1, p2, interp_y) / f64::consts::SQRT_2
+    }
+
+    pub fn width(&self) -> u32 {
+        self.grid.width() - 1
+    }
+    pub fn height(&self) -> u32 {
+        self.grid.height() - 1
+    }
+}
+
+impl<R> RandomGradientBuilder2d<R>
+where
+    R: rand::Rng,
+{
+    pub fn new(rng: R) -> RandomGradientBuilder2d<R> {
+        RandomGradientBuilder2d {
+            rng,
+            distribution: distributions::Range::new(0.0, 2.0 * f64::consts::PI),
+        }
+    }
+}
+
+impl<R> GradientBuilder for RandomGradientBuilder2d<R>
+where
+    R: rand::Rng,
+{
+    type Output = Vector2<f64>;
+
+    fn make_gradient(&mut self) -> Vector2<f64> {
+        let angle = self.distribution.ind_sample(&mut self.rng);
+        let (y, x) = angle.sin_cos();
+
+        Vector2::new(x, y)
+    }
+}
