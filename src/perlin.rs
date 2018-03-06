@@ -5,7 +5,8 @@ use rand;
 use rand::distributions::{self, IndependentSample};
 
 use grid::Grid;
-use interpolate::{self, InterpolationFunction, Lerp};
+use interpolate::{InterpolationFunction, Lerp};
+use noise::Noise;
 
 pub trait GradientBuilder {
     type Output;
@@ -43,15 +44,24 @@ where
             interp: interp,
         }
     }
+}
 
-    pub fn get_value(&self, pos: Vector2<f64>) -> f64 {
-        let x_0 = pos.x as usize;
-        let x_1 = pos.x.ceil() as usize;
-        let y_0 = pos.y as usize;
-        let y_1 = pos.y.ceil() as usize;
+impl<P> Noise for Perlin<P>
+where
+    P: InterpolationFunction,
+{
+    fn value_at(&self, pos: Vector2<f64>) -> f64 {
+        let cell_pos = Vector2::new(
+            pos.x * f64::from(self.width()),
+            pos.y * f64::from(self.height()),
+        );
+        let x_0 = cell_pos.x as usize;
+        let x_1 = cell_pos.x.ceil() as usize;
+        let y_0 = cell_pos.y as usize;
+        let y_1 = cell_pos.y.ceil() as usize;
 
-        let rel_x = pos.x - pos.x.floor();
-        let rel_y = pos.y - pos.y.floor();
+        let rel_x = cell_pos.x - cell_pos.x.floor();
+        let rel_y = cell_pos.y - cell_pos.y.floor();
         let rel_pos = Vector2::new(rel_x, rel_y);
 
         let gradients = [
@@ -82,10 +92,10 @@ where
         Lerp::lerp(p1, p2, interp_y) / f64::consts::SQRT_2
     }
 
-    pub fn width(&self) -> u32 {
+    fn width(&self) -> u32 {
         self.grid.width() - 1
     }
-    pub fn height(&self) -> u32 {
+    fn height(&self) -> u32 {
         self.grid.height() - 1
     }
 }

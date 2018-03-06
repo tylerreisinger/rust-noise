@@ -5,14 +5,17 @@ extern crate rand;
 pub mod perlin;
 pub mod grid;
 pub mod interpolate;
+pub mod noise;
 
 use std::path::Path;
 use std::io;
 use std::f64;
 
+use noise::Noise;
+
 fn main() {
     let perlin = perlin::Perlin::new(
-        (30, 30),
+        (4, 4),
         &mut perlin::RandomGradientBuilder2d::new(rand::thread_rng()),
         interpolate::ImprovedPerlinInterpolator::new(),
     );
@@ -31,8 +34,8 @@ where
     let (img_width, img_height) = dimensions;
     let mut img = image::ImageBuffer::new(img_width, img_height);
 
-    let dx = f64::from(perlin.width()) / f64::from(img_width);
-    let dy = f64::from(perlin.height()) / f64::from(img_height);
+    let dx = 1.0 / f64::from(img_width);
+    let dy = 1.0 / f64::from(img_height);
 
     let (mut min, mut max) = (f64::MAX, f64::MIN);
 
@@ -41,7 +44,7 @@ where
         for x in 0..img_width {
             let perlin_x = f64::from(x) * dx;
 
-            let value = 0.5 + perlin.get_value(cgmath::Vector2::new(perlin_x, perlin_y));
+            let value = 0.5 + perlin.value_at(cgmath::Vector2::new(perlin_x, perlin_y));
 
             if value < min {
                 min = value;
