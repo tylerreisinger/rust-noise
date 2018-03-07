@@ -32,14 +32,15 @@ fn main() {
     ]);
 
     let octaves_2 = perlin::build_geometric_octaves(
-        (8, 8),
-        20,
-        4.0,
+        (2, 2),
+        7,
+        2.0,
         &mut perlin::RandomGradientBuilder2d::new(rand::thread_rng()),
         &interpolate::ImprovedPerlinInterpolator::new(),
     );
 
-    save_noise_image(&octaves_2, (600, 600), Path::new("out.png")).unwrap();
+    save_noise_image(&octaves_2, (800, 800), Path::new("out.png")).unwrap();
+    println!("{}", octaves_2);
 }
 
 fn save_noise_image<N: Noise>(perlin: &N, dimensions: (u32, u32), path: &Path) -> io::Result<()> {

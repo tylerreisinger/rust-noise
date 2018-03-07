@@ -146,14 +146,14 @@ where
     let mut octaves = Vec::with_capacity(num_octaves as usize);
     let amplitude_multiplier: f64 = 1.0
         / (0..num_octaves)
-            .map(|x| 1.0 / (denominator * f64::from(x + 1)))
+            .map(|x| 1.0 / (denominator.powi(x as i32 + 1)))
             .sum::<f64>();
 
     for i in 0..num_octaves {
-        let amplitude = (1.0 / (denominator * f64::from(i + 1))) * amplitude_multiplier;
+        let amplitude = (1.0 / (denominator.powi(i as i32 + 1))) * amplitude_multiplier;
         let octave = Octave::new(
             Perlin::new(
-                (start_dimensions.0 * (i + 1), start_dimensions.1 * (i + 1)),
+                (start_dimensions.0 << i, start_dimensions.1 << i),
                 gradient_builder,
                 interpolator.clone(),
             ),

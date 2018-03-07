@@ -1,3 +1,5 @@
+use std::fmt;
+
 use cgmath::Vector2;
 use noise::Noise;
 
@@ -80,5 +82,33 @@ where
         } else {
             0
         }
+    }
+}
+
+impl<T> fmt::Display for Octave<T>
+where
+    T: Noise,
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "Octave <{}x{}, A={}>",
+            self.width(),
+            self.height(),
+            self.amplitude()
+        )
+    }
+}
+
+impl<T> fmt::Display for OctaveNoise<T>
+where
+    T: Noise,
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(f, "OctaveNoise [")?;
+        for octave in &self.octaves {
+            writeln!(f, "\t{},", octave)?;
+        }
+        writeln!(f, "]")
     }
 }
