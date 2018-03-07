@@ -77,12 +77,17 @@ where
             Vector2::new(0.0, 1.0),
             Vector2::new(1.0, 1.0),
         ];
+
         let distances = rel_points.iter().map(|x| rel_pos - x);
 
-        let values: Vec<_> = distances
-            .zip(gradients.iter())
-            .map(|(d, &g)| d.perp_dot(g))
-            .collect();
+        let values_iter = distances.zip(gradients.iter()).map(|(d, &g)| d.perp_dot(g));
+
+        let mut values = [0.0; 4];
+
+        //Workaround for no way to `collect()` into an array.
+        for (value, distance) in values.iter_mut().zip(values_iter) {
+            *value = distance;
+        }
 
         let interp_x = self.interp.interpolation_value(rel_x);
         let interp_y = self.interp.interpolation_value(rel_y);
