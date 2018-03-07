@@ -7,6 +7,7 @@ use rand::distributions::{self, IndependentSample};
 use grid::Grid;
 use interpolate::{InterpolationFunction, Lerp};
 use noise::Noise;
+use octave::{Octave, OctaveNoise};
 
 pub trait GradientBuilder {
     type Output;
@@ -124,4 +125,37 @@ where
 
         Vector2::new(x, y)
     }
+}
+
+pub fn build_geometric_octaves<P, G>(
+    start_dimensions: (u32, u32),
+    num_octaves: u32,
+    denominator: f64,
+    gradient_builder: &mut G,
+    interpolator: &P,
+) -> OctaveNoise<Perlin<P>>
+where
+    G: GradientBuilder<Output = Vector2<f64>>,
+    P: InterpolationFunction + Clone,
+{
+    let mut octaves = Vec::with_capacity(num_octaves as usize);
+    let amplitude_multiplier: f64 = 1.0
+        / (0..num_octaves)
+            .map(|x| 1.0 / (denominator * f64::from(x + 1)))
+            .sum::<f64>();
+
+    for i in 0..num_octaves {
+        let amplitude = (1.0 / (denominator * f64::from(i + 1))) * amplitude_multiplier;
+        let octave = Octave::new(
+            Perlin::new(
+                (start_dimensions.0 * (i + 1), start_dimensions.1 * (i + 1)),
+                gradient_builder,
+                interpolator.clone(),
+            ),
+            amplitude,
+        );
+        octaves.push(octave);
+    }
+
+    OctaveNoise::from_octaves(octaves)
 }

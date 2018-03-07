@@ -5,6 +5,7 @@ extern crate rand;
 pub mod perlin;
 pub mod grid;
 pub mod interpolate;
+pub mod octave;
 pub mod noise;
 
 use std::path::Path;
@@ -19,18 +20,29 @@ fn main() {
         &mut perlin::RandomGradientBuilder2d::new(rand::thread_rng()),
         interpolate::ImprovedPerlinInterpolator::new(),
     );
+    let perlin_2 = perlin::Perlin::new(
+        (8, 8),
+        &mut perlin::RandomGradientBuilder2d::new(rand::thread_rng()),
+        interpolate::ImprovedPerlinInterpolator::new(),
+    );
 
-    save_perlin_image(&perlin, (600, 600), Path::new("out.png")).unwrap();
+    let octaves = octave::OctaveNoise::from_octaves(vec![
+        octave::Octave::new(perlin.clone(), 0.667),
+        octave::Octave::new(perlin_2.clone(), 0.333),
+    ]);
+
+    let octaves_2 = perlin::build_geometric_octaves(
+        (8, 8),
+        20,
+        4.0,
+        &mut perlin::RandomGradientBuilder2d::new(rand::thread_rng()),
+        &interpolate::ImprovedPerlinInterpolator::new(),
+    );
+
+    save_noise_image(&octaves_2, (600, 600), Path::new("out.png")).unwrap();
 }
 
-fn save_perlin_image<P>(
-    perlin: &perlin::Perlin<P>,
-    dimensions: (u32, u32),
-    path: &Path,
-) -> io::Result<()>
-where
-    P: interpolate::InterpolationFunction,
-{
+fn save_noise_image<N: Noise>(perlin: &N, dimensions: (u32, u32), path: &Path) -> io::Result<()> {
     let (img_width, img_height) = dimensions;
     let mut img = image::ImageBuffer::new(img_width, img_height);
 

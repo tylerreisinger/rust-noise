@@ -7,3 +7,7 @@ authors = ["Tyler Reisinger <reisinger.tyler@gmail.com>"]
 cgmath = "0.16.0"
 rand = "0.4"
 image = "0.18"
+
+# The benchmarking profile, used for `cargo bench` and `cargo test --release`.
+[profile.release]
+debug = true
