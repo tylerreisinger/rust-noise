@@ -164,3 +164,45 @@ where
 
     OctaveNoise::from_octaves(octaves)
 }
+
+pub fn build_arithmetic_octaves<P, G>(
+    start_dimensions: (u32, u32),
+    num_octaves: u32,
+    denominator: f64,
+    size_modifier: u32,
+    gradient_builder: &mut G,
+    interpolator: &P,
+) -> OctaveNoise<Perlin<P>>
+where
+    G: GradientBuilder<Output = Vector2<f64>>,
+    P: InterpolationFunction + Clone,
+{
+    let mut octaves = Vec::with_capacity(num_octaves as usize);
+    let amplitude_multiplier: f64 = 1.0
+        / (0..num_octaves)
+            .map(|x| 1.0 / (denominator * f64::from(x + 1)))
+            .sum::<f64>();
+
+    let initial_octave = Octave::new(
+        Perlin::new(start_dimensions, gradient_builder, interpolator.clone()),
+        (1.0 / denominator) * amplitude_multiplier,
+    );
+    octaves.push(initial_octave);
+    for i in 1..num_octaves {
+        let amplitude = (1.0 / (denominator * f64::from(i + 1))) * amplitude_multiplier;
+        let octave = Octave::new(
+            Perlin::new(
+                (
+                    start_dimensions.0 * (i + 0) * size_modifier,
+                    start_dimensions.1 * (i + 0) * size_modifier,
+                ),
+                gradient_builder,
+                interpolator.clone(),
+            ),
+            amplitude,
+        );
+        octaves.push(octave);
+    }
+
+    OctaveNoise::from_octaves(octaves)
+}

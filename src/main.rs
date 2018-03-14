@@ -32,9 +32,18 @@ fn main() {
     ]);
 
     let octaves_2 = perlin::build_geometric_octaves(
-        (2, 2),
-        7,
+        (4, 4),
+        8,
         2.0,
+        &mut perlin::RandomGradientBuilder2d::new(rand::thread_rng()),
+        &interpolate::ImprovedPerlinInterpolator::new(),
+    );
+
+    let octaves_3 = perlin::build_arithmetic_octaves(
+        (4, 4),
+        50,
+        8.0,
+        2,
         &mut perlin::RandomGradientBuilder2d::new(rand::thread_rng()),
         &interpolate::ImprovedPerlinInterpolator::new(),
     );
