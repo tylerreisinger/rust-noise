@@ -27,6 +27,12 @@ pub struct RandomGradientBuilder2d<R: rand::Rng> {
     distribution: distributions::Range<f64>,
 }
 
+#[derive(Debug, Clone)]
+pub struct CubeGradientBuilder2d<R: rand::Rng> {
+    rng: R,
+    distribution: distributions::Range<u8>,
+}
+
 impl<P> Perlin<P>
 where
     P: InterpolationFunction,
@@ -95,7 +101,7 @@ where
         let p1 = Lerp::lerp(values[0], values[1], interp_x);
         let p2 = Lerp::lerp(values[2], values[3], interp_x);
 
-        Lerp::lerp(p1, p2, interp_y) / f64::consts::SQRT_2
+        Lerp::lerp(p1, p2, interp_y).abs() / f64::consts::SQRT_2
     }
 
     fn width(&self) -> u32 {
@@ -115,6 +121,38 @@ where
             rng,
             distribution: distributions::Range::new(0.0, 2.0 * f64::consts::PI),
         }
+    }
+}
+
+impl<R> CubeGradientBuilder2d<R>
+where
+    R: rand::Rng,
+{
+    pub fn new(rng: R) -> CubeGradientBuilder2d<R> {
+        CubeGradientBuilder2d {
+            rng,
+            distribution: distributions::Range::new(0, 4),
+        }
+    }
+}
+
+impl<R> GradientBuilder for CubeGradientBuilder2d<R>
+where
+    R: rand::Rng,
+{
+    type Output = Vector2<f64>;
+
+    fn make_gradient(&mut self) -> Vector2<f64> {
+        let cube_gradients = [
+            Vector2::new(-1.0, -1.0),
+            Vector2::new(1.0, -1.0),
+            Vector2::new(-1.0, 1.0),
+            Vector2::new(1.0, 1.0),
+        ];
+
+        let idx = self.distribution.ind_sample(&mut self.rng);
+
+        cube_gradients[idx as usize] / 2.0
     }
 }
 

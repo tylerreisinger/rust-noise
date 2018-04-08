@@ -32,7 +32,7 @@ fn main() {
     ]);
 
     let octaves_2 = perlin::build_geometric_octaves(
-        (4, 4),
+        (2, 2),
         8,
         2.0,
         &mut perlin::RandomGradientBuilder2d::new(rand::thread_rng()),
@@ -66,7 +66,7 @@ fn save_noise_image<N: Noise>(perlin: &N, dimensions: (u32, u32), path: &Path) -
         for x in 0..img_width {
             let perlin_x = f64::from(x) * dx;
 
-            let value = 0.5 + perlin.value_at(cgmath::Vector2::new(perlin_x, perlin_y));
+            let value = 2.5 * perlin.value_at(cgmath::Vector2::new(perlin_x, perlin_y));
 
             if value < min {
                 min = value;
