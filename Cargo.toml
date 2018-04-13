@@ -1,5 +1,5 @@
 [package]
-name = "rust_proc_gen"
+name = "noise_lib"
 version = "0.1.0"
 authors = ["Tyler Reisinger <reisinger.tyler@gmail.com>"]
 
@@ -7,7 +7,3 @@ authors = ["Tyler Reisinger <reisinger.tyler@gmail.com>"]
 cgmath = "0.16.0"
 rand = "0.4"
 image = "0.18"
-
-# The benchmarking profile, used for `cargo bench` and `cargo test --release`.
-[profile.release]
-debug = true

@@ -1,6 +1,5 @@
 use std::fmt;
 
-use cgmath::Vector2;
 use noise::Noise;
 
 #[derive(Clone, Debug)]
@@ -49,7 +48,10 @@ impl<T> Noise for Octave<T>
 where
     T: Noise,
 {
-    fn value_at(&self, pos: Vector2<f64>) -> f64 {
+    type IndexType = T::IndexType;
+    type DimType = T::DimType;
+
+    fn value_at(&self, pos: T::IndexType) -> f64 {
         self.noise.value_at(pos) * self.amplitude
     }
 
@@ -59,14 +61,23 @@ where
     fn height(&self) -> u32 {
         self.noise.height()
     }
+    fn dimensions(&self) -> T::DimType {
+        self.noise.dimensions()
+    }
 }
 
 impl<T> Noise for OctaveNoise<T>
 where
     T: Noise,
+    T::DimType: Default,
 {
-    fn value_at(&self, pos: Vector2<f64>) -> f64 {
-        self.octaves.iter().fold(0.0, |l, o| l + o.value_at(pos))
+    type IndexType = T::IndexType;
+    type DimType = T::DimType;
+
+    fn value_at(&self, pos: T::IndexType) -> f64 {
+        self.octaves
+            .iter()
+            .fold(0.0, |l, o| l + o.value_at(pos.clone()))
     }
 
     fn width(&self) -> u32 {
@@ -81,6 +92,14 @@ where
             self.octaves[0].height()
         } else {
             0
+        }
+    }
+
+    fn dimensions(&self) -> T::DimType {
+        if self.octaves.is_empty() {
+            self.octaves[0].dimensions()
+        } else {
+            Default::default()
         }
     }
 }

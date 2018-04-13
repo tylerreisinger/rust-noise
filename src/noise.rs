@@ -1,11 +1,10 @@
-use cgmath::Vector2;
-
 pub trait Noise {
-    fn value_at(&self, pos: Vector2<f64>) -> f64;
+    type IndexType: Clone;
+    type DimType;
+
+    fn value_at(&self, pos: Self::IndexType) -> f64;
 
     fn width(&self) -> u32;
     fn height(&self) -> u32;
-    fn dimensions(&self) -> (u32, u32) {
-        (self.width(), self.height())
-    }
+    fn dimensions(&self) -> Self::DimType;
 }

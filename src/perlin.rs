@@ -57,6 +57,9 @@ impl<P> Noise for Perlin<P>
 where
     P: InterpolationFunction,
 {
+    type IndexType = Vector2<f64>;
+    type DimType = (u32, u32);
+
     fn value_at(&self, pos: Vector2<f64>) -> f64 {
         let cell_pos = Vector2::new(
             pos.x * f64::from(self.width()),
@@ -101,7 +104,7 @@ where
         let p1 = Lerp::lerp(values[0], values[1], interp_x);
         let p2 = Lerp::lerp(values[2], values[3], interp_x);
 
-        Lerp::lerp(p1, p2, interp_y).abs() / f64::consts::SQRT_2
+        Lerp::lerp(p1, p2, interp_y) / f64::consts::SQRT_2
     }
 
     fn width(&self) -> u32 {
@@ -109,6 +112,9 @@ where
     }
     fn height(&self) -> u32 {
         self.grid.height() - 1
+    }
+    fn dimensions(&self) -> (u32, u32) {
+        (self.width(), self.height())
     }
 }
 
@@ -231,8 +237,8 @@ where
         let octave = Octave::new(
             Perlin::new(
                 (
-                    start_dimensions.0 * (i + 0) * size_modifier,
-                    start_dimensions.1 * (i + 0) * size_modifier,
+                    start_dimensions.0 * i * size_modifier,
+                    start_dimensions.1 * i * size_modifier,
                 ),
                 gradient_builder,
                 interpolator.clone(),
