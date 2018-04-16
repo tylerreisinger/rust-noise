@@ -3,6 +3,7 @@ use slice;
 use grid::Grid3d;
 use perlin::GradientBuilder;
 use noise::Noise;
+use octave::{Octave, OctaveNoise};
 use rand;
 use rand::distributions::{self, IndependentSample};
 use std::f64;
@@ -158,4 +159,41 @@ where
 
         Vector3::new(x, y, z)
     }
+}
+
+pub fn build_geometric_octaves<P, G>(
+    start_dimensions: (u32, u32, u32),
+    num_octaves: u32,
+    denominator: f64,
+    gradient_builder: &mut G,
+    interpolator: &P,
+) -> OctaveNoise<Perlin3d<P>>
+where
+    G: GradientBuilder<Output = Vector3<f64>>,
+    P: InterpolationFunction + Clone,
+{
+    let mut octaves = Vec::with_capacity(num_octaves as usize);
+    let amplitude_multiplier: f64 = 1.0
+        / (0..num_octaves)
+            .map(|x| 1.0 / (denominator.powi(x as i32 + 1)))
+            .sum::<f64>();
+
+    for i in 0..num_octaves {
+        let amplitude = (1.0 / (denominator.powi(i as i32 + 1))) * amplitude_multiplier;
+        let octave = Octave::new(
+            Perlin3d::new(
+                (
+                    start_dimensions.0 << i,
+                    start_dimensions.1 << i,
+                    start_dimensions.2,
+                ),
+                gradient_builder,
+                interpolator.clone(),
+            ),
+            amplitude,
+        );
+        octaves.push(octave);
+    }
+
+    OctaveNoise::from_octaves(octaves)
 }
