@@ -34,24 +34,28 @@ impl LinearInterpolator {
 }
 
 impl Lerp for f64 {
+    #[inline]
     fn lerp(x1: f64, x2: f64, pos: f64) -> f64 {
         (1.0 - pos) * x1 + x2 * pos
     }
 }
 
 impl InterpolationFunction for ImprovedPerlinInterpolator {
+    #[inline]
     fn interpolation_value(&self, t: f64) -> f64 {
         t * t * t * (10.0 + (t * (-15.0 + 6.0 * t)))
     }
 }
 
 impl InterpolationFunction for BasicPerlinInterpolator {
+    #[inline]
     fn interpolation_value(&self, t: f64) -> f64 {
         t * t * (3.0 - 2.0 * t)
     }
 }
 
 impl InterpolationFunction for LinearInterpolator {
+    #[inline]
     fn interpolation_value(&self, t: f64) -> f64 {
         t
     }
