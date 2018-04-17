@@ -102,12 +102,6 @@ where
             self.right_noise.value_at(pos),
         )
     }
-    fn width(&self) -> u32 {
-        u32::max(self.left_noise.width(), self.right_noise.width())
-    }
-    fn height(&self) -> u32 {
-        u32::max(self.left_noise.height(), self.right_noise.height())
-    }
     fn dimensions(&self) -> Self::DimType {
         self.left_noise
             .dimensions()
@@ -148,12 +142,6 @@ where
     fn value_at(&self, pos: Self::IndexType) -> f64 {
         self.left_noise.value_at(pos.clone()) + self.right_noise.value_at(pos)
     }
-    fn width(&self) -> u32 {
-        u32::max(self.left_noise.width(), self.right_noise.width())
-    }
-    fn height(&self) -> u32 {
-        u32::max(self.left_noise.height(), self.right_noise.height())
-    }
     fn dimensions(&self) -> Self::DimType {
         self.left_noise
             .dimensions()
@@ -193,12 +181,6 @@ where
 
     fn value_at(&self, pos: Self::IndexType) -> f64 {
         self.left_noise.value_at(pos.clone()) * self.right_noise.value_at(pos)
-    }
-    fn width(&self) -> u32 {
-        u32::max(self.left_noise.width(), self.right_noise.width())
-    }
-    fn height(&self) -> u32 {
-        u32::max(self.left_noise.height(), self.right_noise.height())
     }
     fn dimensions(&self) -> Self::DimType {
         self.left_noise
@@ -259,12 +241,6 @@ where
             self.right_noise.value_at(pos)
         }
     }
-    fn width(&self) -> u32 {
-        u32::max(self.left_noise.width(), self.right_noise.width())
-    }
-    fn height(&self) -> u32 {
-        u32::max(self.left_noise.height(), self.right_noise.height())
-    }
     fn dimensions(&self) -> Self::DimType {
         self.left_noise
             .dimensions()
@@ -320,12 +296,6 @@ where
 
         let f = &self.blend_fn;
         f(val1, val2, criteria)
-    }
-    fn width(&self) -> u32 {
-        u32::max(self.left_noise.width(), self.right_noise.width())
-    }
-    fn height(&self) -> u32 {
-        u32::max(self.left_noise.height(), self.right_noise.height())
     }
     fn dimensions(&self) -> Self::DimType {
         self.left_noise

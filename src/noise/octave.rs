@@ -55,12 +55,6 @@ where
         self.noise.value_at(pos) * self.amplitude
     }
 
-    fn width(&self) -> u32 {
-        self.noise.width()
-    }
-    fn height(&self) -> u32 {
-        self.noise.height()
-    }
     fn dimensions(&self) -> T::DimType {
         self.noise.dimensions()
     }
@@ -80,21 +74,6 @@ where
             .fold(0.0, |l, o| l + o.value_at(pos.clone()))
     }
 
-    fn width(&self) -> u32 {
-        if self.octaves.is_empty() {
-            self.octaves[0].width()
-        } else {
-            0
-        }
-    }
-    fn height(&self) -> u32 {
-        if self.octaves.is_empty() {
-            self.octaves[0].height()
-        } else {
-            0
-        }
-    }
-
     fn dimensions(&self) -> T::DimType {
         if self.octaves.is_empty() {
             self.octaves[0].dimensions()
@@ -107,13 +86,13 @@ where
 impl<T> fmt::Display for Octave<T>
 where
     T: Noise,
+    T::DimType: fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "Octave <{}x{}, A={}>",
-            self.width(),
-            self.height(),
+            "Octave <{:?}, A={}>",
+            self.dimensions(),
             self.amplitude()
         )
     }
@@ -122,6 +101,7 @@ where
 impl<T> fmt::Display for OctaveNoise<T>
 where
     T: Noise,
+    T::DimType: fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         writeln!(f, "OctaveNoise [")?;

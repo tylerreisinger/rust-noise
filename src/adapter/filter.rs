@@ -60,12 +60,6 @@ where
             val
         }
     }
-    fn width(&self) -> u32 {
-        self.noise.width()
-    }
-    fn height(&self) -> u32 {
-        self.noise.height()
-    }
     fn dimensions(&self) -> Self::DimType {
         self.noise.dimensions()
     }
@@ -134,12 +128,6 @@ where
         } else {
             x1
         }
-    }
-    fn width(&self) -> u32 {
-        self.noise.width()
-    }
-    fn height(&self) -> u32 {
-        self.noise.height()
     }
     fn dimensions(&self) -> Self::DimType {
         self.noise.dimensions()

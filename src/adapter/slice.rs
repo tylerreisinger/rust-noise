@@ -22,7 +22,7 @@ where
     pub fn noise(&self) -> &N {
         &self.noise
     }
-    pub fn height(&self) -> f64 {
+    pub fn slice_height(&self) -> f64 {
         self.height
     }
 }
@@ -38,12 +38,6 @@ where
         self.noise.value_at(Vector2::new(pos, self.height))
     }
 
-    fn width(&self) -> u32 {
-        self.noise.width()
-    }
-    fn height(&self) -> u32 {
-        0
-    }
     fn dimensions(&self) -> Self::DimType {
         (self.noise.dimensions().0,)
     }
@@ -61,7 +55,7 @@ where
         &self.noise
     }
 
-    pub fn depth(&self) -> f64 {
+    pub fn slice_depth(&self) -> f64 {
         self.depth
     }
 }
@@ -77,12 +71,6 @@ where
         self.noise.value_at(Vector3::new(pos.x, pos.y, self.depth))
     }
 
-    fn width(&self) -> u32 {
-        self.noise.width()
-    }
-    fn height(&self) -> u32 {
-        self.noise.height()
-    }
     fn dimensions(&self) -> Self::DimType {
         (self.noise.dimensions().0, self.noise.dimensions().1)
     }

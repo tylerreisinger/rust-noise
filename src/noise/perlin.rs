@@ -6,7 +6,7 @@ use rand::distributions::{self, IndependentSample};
 
 use grid::Grid;
 use interpolate::{InterpolationFunction, Lerp};
-use noise::{GradientBuilder, Noise};
+use noise::{GradientBuilder, Noise, Noise2d};
 use noise::octave::{Octave, OctaveNoise};
 
 #[derive(Clone, Debug)]
@@ -101,14 +101,8 @@ where
         Lerp::lerp(p1, p2, interp_y) * f64::consts::SQRT_2
     }
 
-    fn width(&self) -> u32 {
-        self.grid.width() - 1
-    }
-    fn height(&self) -> u32 {
-        self.grid.height() - 1
-    }
     fn dimensions(&self) -> (u32, u32) {
-        (self.width(), self.height())
+        (self.grid.width() - 1, self.grid.height() - 1)
     }
 }
 

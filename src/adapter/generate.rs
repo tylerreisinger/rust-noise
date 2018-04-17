@@ -50,12 +50,6 @@ where
     fn value_at(&self, _: Self::IndexType) -> f64 {
         self.value
     }
-    fn width(&self) -> u32 {
-        1
-    }
-    fn height(&self) -> u32 {
-        1
-    }
     fn dimensions(&self) -> Self::DimType {
         Self::DimType::saturate(1)
     }
@@ -92,12 +86,6 @@ where
     fn value_at(&self, index: Self::IndexType) -> f64 {
         let f = &self.function;
         f(&index)
-    }
-    fn width(&self) -> u32 {
-        1
-    }
-    fn height(&self) -> u32 {
-        1
     }
     fn dimensions(&self) -> Self::DimType {
         Self::DimType::saturate(1)

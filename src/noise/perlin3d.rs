@@ -1,7 +1,7 @@
 use interpolate::{InterpolationFunction, Lerp};
 use grid::Grid3d;
 use noise::GradientBuilder;
-use noise::Noise;
+use noise::{Noise, Noise3d};
 use noise::octave::{Octave, OctaveNoise};
 use rand;
 use rand::distributions::{self, IndependentSample};
@@ -32,10 +32,6 @@ where
             grid: Grid3d::with_data(width + 1, height + 1, depth + 1, data),
             interp: interp,
         }
-    }
-
-    pub fn depth(&self) -> u32 {
-        self.grid.depth() - 1
     }
 }
 
@@ -109,14 +105,12 @@ where
         Lerp::lerp(front_p, back_p, interp_z) * f64::consts::SQRT_2
     }
 
-    fn width(&self) -> u32 {
-        self.grid.width() - 1
-    }
-    fn height(&self) -> u32 {
-        self.grid.height() - 1
-    }
     fn dimensions(&self) -> (u32, u32, u32) {
-        (self.width(), self.height(), self.depth())
+        (
+            self.grid.width() - 1,
+            self.grid.height() - 1,
+            self.grid.depth() - 1,
+        )
     }
 }
 
