@@ -2,11 +2,13 @@ pub mod scale;
 pub mod transform;
 pub mod combine;
 pub mod filter;
+pub mod generate;
 
 pub use self::scale::{Scale, WithRange};
 pub use self::transform::{Negate, Transform};
 pub use self::combine::{Add, Combine};
 pub use self::filter::Clamp;
+pub use self::generate::Constant;
 
 use super::noise::Noise;
 
