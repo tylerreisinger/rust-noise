@@ -6,7 +6,7 @@ use rand::distributions::{self, IndependentSample};
 
 use grid::Grid;
 use interpolate::{InterpolationFunction, Lerp};
-use noise::{Noise, GradientBuilder};
+use noise::{GradientBuilder, Noise};
 use noise::octave::{Octave, OctaveNoise};
 
 #[derive(Clone, Debug)]

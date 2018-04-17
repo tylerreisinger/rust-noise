@@ -3,7 +3,7 @@ pub mod perlin3d;
 pub mod slice;
 pub mod octave;
 
-pub use noise::perlin::{RandomGradientBuilder2d, CubeGradientBuilder2d, Perlin};
+pub use noise::perlin::{CubeGradientBuilder2d, Perlin, RandomGradientBuilder2d};
 pub use noise::perlin3d::{Perlin3d, RandomGradientBuilder3d};
 pub use noise::slice::Slice2d;
 pub use noise::octave::{Octave, OctaveNoise};
