@@ -4,7 +4,7 @@ pub mod combine;
 pub mod filter;
 
 pub use self::scale::{Scale, WithRange};
-pub use self::transform::Transform;
+pub use self::transform::{Negate, Transform};
 pub use self::combine::{Add, Combine};
 pub use self::filter::Clamp;
 
@@ -41,6 +41,10 @@ pub trait NoiseExt: super::noise::Noise + Sized {
         N2: Noise<IndexType = Self::IndexType, DimType = Self::DimType>,
     {
         Add::new(self, right_noise)
+    }
+
+    fn negate(self) -> Negate<Self> {
+        Negate::new(self)
     }
 
     fn clamp(self, low: f64, high: f64) -> Clamp<Self> {
