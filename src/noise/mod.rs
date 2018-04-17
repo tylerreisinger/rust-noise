@@ -3,7 +3,7 @@ pub mod perlin;
 pub mod octave;
 
 pub use noise::gradient::{CubeGradientBuilder2d, RandomGradientBuilder2d, RandomGradientBuilder3d};
-pub use noise::perlin::{Perlin2d, Perlin3d};
+pub use noise::perlin::{Perlin1d, Perlin2d, Perlin3d};
 pub use noise::octave::{Octave, OctaveNoise};
 
 use adapter::{Extension2d, Extension3d, Slice1d, Slice2d};
