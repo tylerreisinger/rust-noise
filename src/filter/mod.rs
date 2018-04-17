@@ -1,10 +1,12 @@
 pub mod scale;
 pub mod transform;
 pub mod combine;
+pub mod filter;
 
 pub use filter::scale::{Scale, WithRange};
 pub use filter::transform::Transform;
 pub use filter::combine::Combine;
+pub use filter::filter::Clamp;
 
 pub trait NoiseExt: super::noise::Noise + Sized {
     fn scale(self, amplitude: f64) -> Scale<Self> {
@@ -28,6 +30,10 @@ pub trait NoiseExt: super::noise::Noise + Sized {
         F: Fn(f64, f64) -> f64,
     {
         Combine::new(self, right_noise, combiner)
+    }
+
+    fn clamp(self, low: f64, high: f64) -> Clamp<Self> {
+        Clamp::new(self, low, high)
     }
 }
 
