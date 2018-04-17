@@ -8,7 +8,7 @@ pub mod generate;
 pub use self::scale::{Scale, WithRange};
 pub use self::transform::{Negate, Transform};
 pub use self::combine::{Add, Blend, Combine, Multiply, Select};
-pub use self::filter::Clamp;
+pub use self::filter::{Clamp, Filter, FilterKind};
 pub use self::generate::{Constant, FunctionValue};
 
 use super::noise::Noise;
@@ -79,6 +79,13 @@ pub trait NoiseExt: super::noise::Noise + Sized {
 
     fn clamp(self, low: f64, high: f64) -> Clamp<Self> {
         Clamp::new(self, low, high)
+    }
+
+    fn filter<F>(self, start: f64, end: f64, kind: FilterKind, blend_fn: F) -> Filter<Self, F>
+    where
+        F: Fn(f64, f64, f64) -> f64,
+    {
+        Filter::new(self, start, end, kind, blend_fn)
     }
 }
 
