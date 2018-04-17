@@ -1,3 +1,4 @@
+pub mod blend;
 pub mod scale;
 pub mod transform;
 pub mod combine;
@@ -6,7 +7,7 @@ pub mod generate;
 
 pub use self::scale::{Scale, WithRange};
 pub use self::transform::{Negate, Transform};
-pub use self::combine::{Add, Combine, Multiply, Select};
+pub use self::combine::{Add, Blend, Combine, Multiply, Select};
 pub use self::filter::Clamp;
 pub use self::generate::{Constant, FunctionValue};
 
@@ -44,6 +45,16 @@ pub trait NoiseExt: super::noise::Noise + Sized {
         N3: Noise<IndexType = Self::IndexType, DimType = Self::DimType>,
     {
         Select::new(self, right_noise, criteria, threshold)
+    }
+
+    fn blend<N2, N3, F>(self, right_noise: N2, criteria: N3, blend_fn: F) -> Blend<Self, N2, N3, F>
+    where
+        Self::DimType: TupleUtil<u32>,
+        N2: Noise<IndexType = Self::IndexType, DimType = Self::DimType>,
+        N3: Noise<IndexType = Self::IndexType, DimType = Self::DimType>,
+        F: Fn(f64, f64, f64) -> f64,
+    {
+        Blend::new(self, right_noise, criteria, blend_fn)
     }
 
     fn add<N2>(self, right_noise: N2) -> Add<Self, N2>
