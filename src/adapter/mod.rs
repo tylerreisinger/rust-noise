@@ -30,7 +30,7 @@ pub trait NoiseExt: super::noise::Noise + Sized {
 
     fn combine<N2, F>(self, right_noise: N2, combiner: F) -> Combine<Self, N2, F>
     where
-        Self::DimType: combine::TupleMax<u32>,
+        Self::DimType: TupleUtil<u32>,
         N2: Noise<IndexType = Self::IndexType, DimType = Self::DimType>,
         F: Fn(f64, f64) -> f64,
     {
@@ -39,7 +39,7 @@ pub trait NoiseExt: super::noise::Noise + Sized {
 
     fn add<N2>(self, right_noise: N2) -> Add<Self, N2>
     where
-        Self::DimType: combine::TupleMax<u32>,
+        Self::DimType: TupleUtil<u32>,
         N2: Noise<IndexType = Self::IndexType, DimType = Self::DimType>,
     {
         Add::new(self, right_noise)
@@ -58,4 +58,47 @@ impl<N> NoiseExt for N
 where
     N: Noise,
 {
+}
+
+pub trait TupleUtil<T> {
+    fn max(&self, other: &Self) -> Self;
+    fn saturate(val: u32) -> Self;
+}
+
+impl TupleUtil<u32> for (u32,) {
+    fn max(&self, rhs: &(u32,)) -> (u32,) {
+        (self.0.max(rhs.0),)
+    }
+    fn saturate(val: u32) -> (u32,) {
+        (val,)
+    }
+}
+impl TupleUtil<u32> for (u32, u32) {
+    fn max(&self, rhs: &(u32, u32)) -> (u32, u32) {
+        (self.0.max(rhs.0), self.1.max(rhs.1))
+    }
+    fn saturate(val: u32) -> (u32, u32) {
+        (val, val)
+    }
+}
+impl TupleUtil<u32> for (u32, u32, u32) {
+    fn max(&self, rhs: &(u32, u32, u32)) -> (u32, u32, u32) {
+        (self.0.max(rhs.0), self.1.max(rhs.1), self.2.max(rhs.2))
+    }
+    fn saturate(val: u32) -> (u32, u32, u32) {
+        (val, val, val)
+    }
+}
+impl TupleUtil<u32> for (u32, u32, u32, u32) {
+    fn max(&self, rhs: &(u32, u32, u32, u32)) -> (u32, u32, u32, u32) {
+        (
+            self.0.max(rhs.0),
+            self.1.max(rhs.1),
+            self.2.max(rhs.2),
+            self.3.max(rhs.3),
+        )
+    }
+    fn saturate(val: u32) -> (u32, u32, u32, u32) {
+        (val, val, val, val)
+    }
 }

@@ -1,34 +1,5 @@
 use noise::Noise;
-
-pub trait TupleMax<T> {
-    fn max(&self, other: &Self) -> Self;
-}
-
-impl TupleMax<u32> for (u32,) {
-    fn max(&self, rhs: &(u32,)) -> (u32,) {
-        (self.0.max(rhs.0),)
-    }
-}
-impl TupleMax<u32> for (u32, u32) {
-    fn max(&self, rhs: &(u32, u32)) -> (u32, u32) {
-        (self.0.max(rhs.0), self.1.max(rhs.1))
-    }
-}
-impl TupleMax<u32> for (u32, u32, u32) {
-    fn max(&self, rhs: &(u32, u32, u32)) -> (u32, u32, u32) {
-        (self.0.max(rhs.0), self.1.max(rhs.1), self.2.max(rhs.2))
-    }
-}
-impl TupleMax<u32> for (u32, u32, u32, u32) {
-    fn max(&self, rhs: &(u32, u32, u32, u32)) -> (u32, u32, u32, u32) {
-        (
-            self.0.max(rhs.0),
-            self.1.max(rhs.1),
-            self.2.max(rhs.2),
-            self.3.max(rhs.3),
-        )
-    }
-}
+use super::TupleUtil;
 
 #[derive(Debug, Clone)]
 pub struct Add<N1, N2>
@@ -80,7 +51,7 @@ where
 impl<N1, N2, F> Noise for Combine<N1, N2, F>
 where
     N1: Noise,
-    N1::DimType: TupleMax<u32>,
+    N1::DimType: TupleUtil<u32>,
     N2: Noise<IndexType = N1::IndexType, DimType = N1::DimType>,
     F: Fn(f64, f64) -> f64,
 {
@@ -110,7 +81,7 @@ where
 impl<N1, N2> Add<N1, N2>
 where
     N1: Noise,
-    N1::DimType: TupleMax<u32>,
+    N1::DimType: TupleUtil<u32>,
     N2: Noise<IndexType = N1::IndexType, DimType = N1::DimType>,
 {
     pub fn new(left_noise: N1, right_noise: N2) -> Add<N1, N2> {
@@ -131,7 +102,7 @@ where
 impl<N1, N2> Noise for Add<N1, N2>
 where
     N1: Noise,
-    N1::DimType: TupleMax<u32>,
+    N1::DimType: TupleUtil<u32>,
     N2: Noise<IndexType = N1::IndexType, DimType = N1::DimType>,
 {
     type IndexType = N1::IndexType;
