@@ -104,7 +104,7 @@ where
         let p1 = Lerp::lerp(values[0], values[1], interp_x);
         let p2 = Lerp::lerp(values[2], values[3], interp_x);
 
-        Lerp::lerp(p1, p2, interp_y) / f64::consts::SQRT_2
+        Lerp::lerp(p1, p2, interp_y) * f64::consts::SQRT_2
     }
 
     fn width(&self) -> u32 {
@@ -158,7 +158,7 @@ where
 
         let idx = self.distribution.ind_sample(&mut self.rng);
 
-        cube_gradients[idx as usize] / 2.0
+        cube_gradients[idx as usize] / f64::consts::SQRT_2
     }
 }
 

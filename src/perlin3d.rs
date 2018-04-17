@@ -111,7 +111,7 @@ where
         let front_p = Lerp::lerp(p1, p2, interp_y);
         let back_p = Lerp::lerp(p3, p4, interp_y);
 
-        Lerp::lerp(front_p, back_p, interp_z)
+        Lerp::lerp(front_p, back_p, interp_z) * f64::consts::SQRT_2
     }
 
     fn width(&self) -> u32 {
