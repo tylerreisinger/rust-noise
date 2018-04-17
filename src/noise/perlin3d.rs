@@ -1,5 +1,5 @@
 use interpolate::{InterpolationFunction, Lerp};
-use noise::slice;
+use adapter::slice;
 use grid::Grid3d;
 use noise::GradientBuilder;
 use noise::Noise;
@@ -37,10 +37,6 @@ where
 
     pub fn depth(&self) -> u32 {
         self.grid.depth() - 1
-    }
-
-    pub fn slice_2d(&self, depth: f64) -> slice::Slice2d<Perlin3d<P>> {
-        slice::Slice2d::new(self, depth)
     }
 }
 
