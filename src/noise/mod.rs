@@ -64,3 +64,24 @@ where
         (**self).dimensions()
     }
 }
+
+impl<N> Noise for Box<N>
+where
+    N: Noise,
+{
+    type IndexType = N::IndexType;
+    type DimType = N::DimType;
+
+    fn value_at(&self, pos: Self::IndexType) -> f64 {
+        (**self).value_at(pos)
+    }
+    fn width(&self) -> u32 {
+        (**self).width()
+    }
+    fn height(&self) -> u32 {
+        (**self).height()
+    }
+    fn dimensions(&self) -> Self::DimType {
+        (**self).dimensions()
+    }
+}
