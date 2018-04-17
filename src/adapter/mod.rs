@@ -1,19 +1,19 @@
 pub mod blend;
+pub mod combine;
+pub mod extend;
+pub mod filter;
+pub mod generate;
 pub mod scale;
 pub mod slice;
 pub mod transform;
-pub mod combine;
-pub mod filter;
-pub mod generate;
-pub mod extend;
 
+pub use self::combine::{Add, Blend, Combine, Multiply, Select};
+pub use self::extend::{Extension2d, Extension3d};
+pub use self::filter::{Clamp, Filter, FilterKind};
+pub use self::generate::{Constant, FunctionValue};
 pub use self::scale::{Scale, WithRange};
 pub use self::slice::{Slice1d, Slice2d};
 pub use self::transform::{Negate, Transform};
-pub use self::combine::{Add, Blend, Combine, Multiply, Select};
-pub use self::filter::{Clamp, Filter, FilterKind};
-pub use self::generate::{Constant, FunctionValue};
-pub use self::extend::{Extension2d, Extension3d};
 
 use super::noise::Noise;
 

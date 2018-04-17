@@ -1,6 +1,6 @@
 extern crate cgmath;
-extern crate image;
 extern crate rand;
+extern crate image;
 
 pub mod adapter;
 pub mod grid;
