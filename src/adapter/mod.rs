@@ -5,6 +5,7 @@ pub mod transform;
 pub mod combine;
 pub mod filter;
 pub mod generate;
+pub mod extend;
 
 pub use self::scale::{Scale, WithRange};
 pub use self::slice::{Slice1d, Slice2d};
@@ -12,6 +13,7 @@ pub use self::transform::{Negate, Transform};
 pub use self::combine::{Add, Blend, Combine, Multiply, Select};
 pub use self::filter::{Clamp, Filter, FilterKind};
 pub use self::generate::{Constant, FunctionValue};
+pub use self::extend::{Extension2d, Extension3d};
 
 use super::noise::Noise;
 
@@ -88,13 +90,6 @@ pub trait NoiseExt: super::noise::Noise + Sized {
         F: Fn(f64, f64, f64) -> f64,
     {
         Filter::new(self, start, end, kind, blend_fn)
-    }
-
-    fn slice_1d(self, height: f64) -> Slice1d<Self> {
-        Slice1d::new(self, height)
-    }
-    fn slice_2d(self, depth: f64) -> Slice2d<Self> {
-        Slice2d::new(self, depth)
     }
 }
 

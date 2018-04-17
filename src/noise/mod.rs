@@ -6,6 +6,7 @@ pub use noise::perlin::{CubeGradientBuilder2d, Perlin, RandomGradientBuilder2d};
 pub use noise::perlin3d::{Perlin3d, RandomGradientBuilder3d};
 pub use noise::octave::{Octave, OctaveNoise};
 
+use adapter::{Extension2d, Extension3d, Slice1d, Slice2d};
 use cgmath::{Vector2, Vector3};
 
 pub trait GradientBuilder {
@@ -23,20 +24,32 @@ pub trait Noise {
     fn dimensions(&self) -> Self::DimType;
 }
 
-pub trait Noise1d: Noise<IndexType = f64, DimType = (u32,)> {
+pub trait Noise1d: Noise<IndexType = f64, DimType = (u32,)> + Sized {
     fn width(&self) -> u32 {
         self.dimensions().0
     }
+
+    fn extend(self) -> Extension2d<Self> {
+        Extension2d::new(self)
+    }
 }
-pub trait Noise2d: Noise<IndexType = Vector2<f64>, DimType = (u32, u32)> {
+pub trait Noise2d: Noise<IndexType = Vector2<f64>, DimType = (u32, u32)> + Sized {
     fn width(&self) -> u32 {
         self.dimensions().0
     }
     fn height(&self) -> u32 {
         self.dimensions().1
     }
+
+    fn slice(self, height: f64) -> Slice1d<Self> {
+        Slice1d::new(self, height)
+    }
+    fn extend(self) -> Extension3d<Self> {
+        Extension3d::new(self)
+    }
 }
-pub trait Noise3d: Noise<IndexType = Vector3<f64>, DimType = (u32, u32, u32)> {
+pub trait Noise3d
+    : Noise<IndexType = Vector3<f64>, DimType = (u32, u32, u32)> + Sized {
     fn width(&self) -> u32 {
         self.dimensions().0
     }
@@ -45,6 +58,10 @@ pub trait Noise3d: Noise<IndexType = Vector3<f64>, DimType = (u32, u32, u32)> {
     }
     fn depth(&self) -> u32 {
         self.dimensions().2
+    }
+
+    fn slice(self, depth: f64) -> Slice2d<Self> {
+        Slice2d::new(self, depth)
     }
 }
 
