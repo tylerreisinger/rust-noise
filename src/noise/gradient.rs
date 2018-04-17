@@ -7,11 +7,21 @@ use cgmath::{Vector2, Vector3};
 use noise::GradientBuilder;
 
 #[derive(Debug, Clone)]
+pub struct RandomGradientBuilder1d<R: rand::Rng> {
+    rng: R,
+    distribution: distributions::Range<f64>,
+}
+#[derive(Debug, Clone)]
 pub struct RandomGradientBuilder2d<R: rand::Rng> {
     rng: R,
     distribution: distributions::Range<f64>,
 }
 
+#[derive(Debug, Clone)]
+pub struct CubeGradientBuilder1d<R: rand::Rng> {
+    rng: R,
+    distribution: distributions::Range<u8>,
+}
 #[derive(Debug, Clone)]
 pub struct CubeGradientBuilder2d<R: rand::Rng> {
     rng: R,
@@ -22,6 +32,53 @@ pub struct CubeGradientBuilder2d<R: rand::Rng> {
 pub struct RandomGradientBuilder3d<R: rand::Rng> {
     rng: R,
     distribution: distributions::Range<f64>,
+}
+
+impl<R> RandomGradientBuilder1d<R>
+where
+    R: rand::Rng,
+{
+    pub fn new(rng: R) -> RandomGradientBuilder1d<R> {
+        RandomGradientBuilder1d {
+            rng,
+            distribution: distributions::Range::new(-1.0, 1.0),
+        }
+    }
+}
+
+impl<R> GradientBuilder for RandomGradientBuilder1d<R>
+where
+    R: rand::Rng,
+{
+    type Output = f64;
+
+    fn make_gradient(&mut self) -> f64 {
+        self.distribution.ind_sample(&mut self.rng)
+    }
+}
+
+impl<R> CubeGradientBuilder1d<R>
+where
+    R: rand::Rng,
+{
+    pub fn new(rng: R) -> CubeGradientBuilder1d<R> {
+        CubeGradientBuilder1d {
+            rng,
+            distribution: distributions::Range::new(0, 2),
+        }
+    }
+}
+
+impl<R> GradientBuilder for CubeGradientBuilder1d<R>
+where
+    R: rand::Rng,
+{
+    type Output = f64;
+
+    fn make_gradient(&mut self) -> f64 {
+        let vals = [-1.0, 1.0];
+        vals[self.distribution.ind_sample(&mut self.rng) as usize]
+    }
 }
 
 impl<R> RandomGradientBuilder3d<R>

@@ -5,19 +5,78 @@ use cgmath::{InnerSpace, Vector3};
 
 use grid::{Grid, Grid3d};
 use interpolate::{InterpolationFunction, Lerp};
-use noise::{GradientBuilder, Noise, Noise2d, Noise3d};
+use noise::{GradientBuilder, Noise, Noise1d, Noise2d, Noise3d};
 use noise::octave::{Octave, OctaveNoise};
 
+#[derive(Clone, Debug)]
+pub struct Perlin1d<P: InterpolationFunction> {
+    grid: Vec<f64>,
+    interp: P,
+}
+#[derive(Clone, Debug)]
+pub struct Perlin2d<P: InterpolationFunction> {
+    grid: Grid<Vector2<f64>>,
+    interp: P,
+}
 #[derive(Debug, Clone)]
 pub struct Perlin3d<P: InterpolationFunction> {
     grid: Grid3d<Vector3<f64>>,
     interp: P,
 }
 
-#[derive(Clone, Debug)]
-pub struct Perlin2d<P: InterpolationFunction> {
-    grid: Grid<Vector2<f64>>,
-    interp: P,
+impl<P> Perlin1d<P>
+where
+    P: InterpolationFunction,
+{
+    pub fn new<T>(size: u32, builder: &mut T, interp: P) -> Perlin1d<P>
+    where
+        T: GradientBuilder<Output = f64>,
+    {
+        let data = (0..size).map(|_| builder.make_gradient()).collect();
+
+        Perlin1d {
+            grid: data,
+            interp: interp,
+        }
+    }
+}
+
+impl<P> Noise for Perlin1d<P>
+where
+    P: InterpolationFunction,
+{
+    type IndexType = f64;
+    type DimType = (u32,);
+
+    fn value_at(&self, pos: f64) -> f64 {
+        let cell_pos = pos * f64::from(self.width());
+        let x_0 = cell_pos as usize;
+        let x_1 = x_0 + 1;
+
+        let rel_pos = cell_pos - cell_pos.floor();
+
+        let gradients = [self.grid[x_0], self.grid[x_1]];
+        let rel_points = [0.0, 1.0];
+
+        let distances = rel_points.iter().map(|x| rel_pos - x);
+
+        let values_iter = distances.zip(gradients.iter()).map(|(d, &g)| d * g);
+
+        let mut values = [0.0; 2];
+
+        //Workaround for no way to `collect()` into an array.
+        for (value, distance) in values.iter_mut().zip(values_iter) {
+            *value = distance;
+        }
+
+        let interp_coeff = self.interp.interpolation_value(rel_pos);
+
+        Lerp::lerp(values[0], values[1], interp_coeff) * 2.0
+    }
+
+    fn dimensions(&self) -> (u32,) {
+        (self.grid.len() as u32 - 1,)
+    }
 }
 
 impl<P> Perlin2d<P>
@@ -197,7 +256,6 @@ where
         )
     }
 }
-
 
 pub fn build_geometric_octaves<P, G>(
     start_dimensions: (u32, u32),
