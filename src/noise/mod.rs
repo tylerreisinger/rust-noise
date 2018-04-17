@@ -1,9 +1,11 @@
+pub mod gradient;
 pub mod perlin;
 pub mod perlin3d;
 pub mod octave;
 
-pub use noise::perlin::{CubeGradientBuilder2d, Perlin, RandomGradientBuilder2d};
-pub use noise::perlin3d::{Perlin3d, RandomGradientBuilder3d};
+pub use noise::gradient::{CubeGradientBuilder2d, RandomGradientBuilder2d, RandomGradientBuilder3d};
+pub use noise::perlin::Perlin;
+pub use noise::perlin3d::Perlin3d;
 pub use noise::octave::{Octave, OctaveNoise};
 
 use adapter::{Extension2d, Extension3d, Slice1d, Slice2d};

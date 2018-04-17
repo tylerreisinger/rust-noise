@@ -3,8 +3,6 @@ use grid::Grid3d;
 use noise::GradientBuilder;
 use noise::{Noise, Noise3d};
 use noise::octave::{Octave, OctaveNoise};
-use rand;
-use rand::distributions::{self, IndependentSample};
 use std::f64;
 
 use cgmath::{InnerSpace, Vector3};
@@ -111,42 +109,6 @@ where
             self.grid.height() - 1,
             self.grid.depth() - 1,
         )
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct RandomGradientBuilder3d<R: rand::Rng> {
-    rng: R,
-    distribution: distributions::Range<f64>,
-}
-
-impl<R> RandomGradientBuilder3d<R>
-where
-    R: rand::Rng,
-{
-    pub fn new(rng: R) -> RandomGradientBuilder3d<R> {
-        RandomGradientBuilder3d {
-            rng,
-            distribution: distributions::Range::new(0.0, 2.0 * f64::consts::PI),
-        }
-    }
-}
-
-impl<R> GradientBuilder for RandomGradientBuilder3d<R>
-where
-    R: rand::Rng,
-{
-    type Output = Vector3<f64>;
-
-    fn make_gradient(&mut self) -> Vector3<f64> {
-        let theta = self.distribution.ind_sample(&mut self.rng) / 2.0;
-        let phi = self.distribution.ind_sample(&mut self.rng);
-
-        let x = theta.sin() * phi.cos();
-        let y = theta.sin() * phi.sin();
-        let z = theta.cos();
-
-        Vector3::new(x, y, z)
     }
 }
 
