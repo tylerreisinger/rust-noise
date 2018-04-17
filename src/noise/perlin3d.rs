@@ -1,9 +1,9 @@
 use interpolate::{InterpolationFunction, Lerp};
-use slice;
+use noise::slice;
 use grid::Grid3d;
-use perlin::GradientBuilder;
+use noise::GradientBuilder;
 use noise::Noise;
-use octave::{Octave, OctaveNoise};
+use noise::octave::{Octave, OctaveNoise};
 use rand;
 use rand::distributions::{self, IndependentSample};
 use std::f64;

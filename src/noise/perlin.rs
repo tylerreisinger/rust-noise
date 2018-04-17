@@ -6,14 +6,8 @@ use rand::distributions::{self, IndependentSample};
 
 use grid::Grid;
 use interpolate::{InterpolationFunction, Lerp};
-use noise::Noise;
-use octave::{Octave, OctaveNoise};
-
-pub trait GradientBuilder {
-    type Output;
-
-    fn make_gradient(&mut self) -> Self::Output;
-}
+use noise::{Noise, GradientBuilder};
+use noise::octave::{Octave, OctaveNoise};
 
 #[derive(Clone, Debug)]
 pub struct Perlin<P: InterpolationFunction> {
