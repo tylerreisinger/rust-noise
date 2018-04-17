@@ -33,6 +33,19 @@ where
     combiner: F,
 }
 
+#[derive(Debug, Clone)]
+pub struct Select<N1, N2, N3>
+where
+    N1: Noise,
+    N2: Noise<IndexType = N1::IndexType, DimType = N1::DimType>,
+    N3: Noise<IndexType = N1::IndexType, DimType = N1::DimType>,
+{
+    left_noise: N1,
+    right_noise: N2,
+    criteria: N3,
+    threshold: f64,
+}
+
 impl<N1, N2, F> Combine<N1, N2, F>
 where
     N1: Noise,
@@ -166,6 +179,71 @@ where
 
     fn value_at(&self, pos: Self::IndexType) -> f64 {
         self.left_noise.value_at(pos.clone()) * self.right_noise.value_at(pos)
+    }
+    fn width(&self) -> u32 {
+        u32::max(self.left_noise.width(), self.right_noise.width())
+    }
+    fn height(&self) -> u32 {
+        u32::max(self.left_noise.height(), self.right_noise.height())
+    }
+    fn dimensions(&self) -> Self::DimType {
+        self.left_noise
+            .dimensions()
+            .max(&self.right_noise.dimensions())
+    }
+}
+
+impl<N1, N2, N3> Select<N1, N2, N3>
+where
+    N1: Noise,
+    N2: Noise<IndexType = N1::IndexType, DimType = N1::DimType>,
+    N3: Noise<IndexType = N1::IndexType, DimType = N1::DimType>,
+{
+    pub fn new(
+        left_noise: N1,
+        right_noise: N2,
+        criteria: N3,
+        threshold: f64,
+    ) -> Select<N1, N2, N3> {
+        Select {
+            left_noise,
+            right_noise,
+            criteria,
+            threshold,
+        }
+    }
+
+    pub fn left_noise(&self) -> &N1 {
+        &self.left_noise
+    }
+    pub fn right_noise(&self) -> &N2 {
+        &self.right_noise
+    }
+    pub fn criteria(&self) -> &N3 {
+        &self.criteria
+    }
+    pub fn threshold(&self) -> f64 {
+        self.threshold
+    }
+}
+
+impl<N1, N2, N3> Noise for Select<N1, N2, N3>
+where
+    N1::DimType: TupleUtil<u32>,
+    N1: Noise,
+    N2: Noise<IndexType = N1::IndexType, DimType = N1::DimType>,
+    N3: Noise<IndexType = N1::IndexType, DimType = N1::DimType>,
+{
+    type IndexType = N1::IndexType;
+    type DimType = N1::DimType;
+
+    fn value_at(&self, pos: Self::IndexType) -> f64 {
+        let criteria = self.criteria.value_at(pos.clone());
+        if criteria > self.threshold {
+            self.left_noise.value_at(pos)
+        } else {
+            self.right_noise.value_at(pos)
+        }
     }
     fn width(&self) -> u32 {
         u32::max(self.left_noise.width(), self.right_noise.width())
