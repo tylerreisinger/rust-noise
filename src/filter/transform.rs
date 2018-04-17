@@ -4,7 +4,7 @@ use noise::Noise;
 pub struct Transform<N, F>
 where
     N: Noise,
-    F: Fn(N::IndexType, f64) -> f64,
+    F: Fn(&N::IndexType, f64) -> f64,
 {
     noise: N,
     transform: F,
@@ -13,7 +13,7 @@ where
 impl<N, F> Transform<N, F>
 where
     N: Noise,
-    F: Fn(N::IndexType, f64) -> f64,
+    F: Fn(&N::IndexType, f64) -> f64,
 {
     pub fn new(noise: N, transform: F) -> Transform<N, F> {
         Transform { noise, transform }
@@ -30,14 +30,14 @@ where
 impl<N, F> Noise for Transform<N, F>
 where
     N: Noise,
-    F: Fn(N::IndexType, f64) -> f64,
+    F: Fn(&N::IndexType, f64) -> f64,
 {
     type IndexType = N::IndexType;
     type DimType = N::DimType;
 
     fn value_at(&self, pos: Self::IndexType) -> f64 {
         let f = &self.transform;
-        f(pos.clone(), self.noise.value_at(pos))
+        f(&pos, self.noise.value_at(pos.clone()))
     }
     fn width(&self) -> u32 {
         self.noise.width()
