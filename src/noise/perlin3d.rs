@@ -1,5 +1,4 @@
 use interpolate::{InterpolationFunction, Lerp};
-use adapter::slice;
 use grid::Grid3d;
 use noise::GradientBuilder;
 use noise::Noise;
@@ -55,11 +54,11 @@ where
         );
 
         let x_0 = cell_pos.x as usize;
-        let x_1 = cell_pos.x.ceil() as usize;
+        let x_1 = x_0 + 1;
         let y_0 = cell_pos.y as usize;
-        let y_1 = cell_pos.y.ceil() as usize;
+        let y_1 = y_0 + 1;
         let z_0 = cell_pos.z as usize;
-        let z_1 = cell_pos.z.ceil() as usize;
+        let z_1 = z_0 + 1;
 
         let rel_x = cell_pos.x - cell_pos.x.floor();
         let rel_y = cell_pos.y - cell_pos.y.floor();

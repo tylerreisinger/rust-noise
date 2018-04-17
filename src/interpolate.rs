@@ -9,21 +9,21 @@ pub trait Lerp {
 }
 
 #[derive(Default, Clone, Debug)]
-pub struct ImprovedPerlinInterpolator;
+pub struct Hermite5thOrderInterpolator;
 #[derive(Default, Clone, Debug)]
-pub struct BasicPerlinInterpolator;
+pub struct Hermite3rdOrderInterpolator;
 #[derive(Default, Clone, Debug)]
 pub struct LinearInterpolator;
 
-impl ImprovedPerlinInterpolator {
-    pub fn new() -> ImprovedPerlinInterpolator {
-        ImprovedPerlinInterpolator {}
+impl Hermite5thOrderInterpolator {
+    pub fn new() -> Hermite5thOrderInterpolator {
+        Hermite5thOrderInterpolator {}
     }
 }
 
-impl BasicPerlinInterpolator {
-    pub fn new() -> BasicPerlinInterpolator {
-        BasicPerlinInterpolator {}
+impl Hermite3rdOrderInterpolator {
+    pub fn new() -> Hermite3rdOrderInterpolator {
+        Hermite3rdOrderInterpolator {}
     }
 }
 
@@ -40,14 +40,14 @@ impl Lerp for f64 {
     }
 }
 
-impl InterpolationFunction for ImprovedPerlinInterpolator {
+impl InterpolationFunction for Hermite5thOrderInterpolator {
     #[inline]
     fn interpolation_value(&self, t: f64) -> f64 {
         t * t * t * (10.0 + (t * (-15.0 + 6.0 * t)))
     }
 }
 
-impl InterpolationFunction for BasicPerlinInterpolator {
+impl InterpolationFunction for Hermite3rdOrderInterpolator {
     #[inline]
     fn interpolation_value(&self, t: f64) -> f64 {
         t * t * (3.0 - 2.0 * t)
