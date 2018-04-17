@@ -6,9 +6,9 @@ pub mod generate;
 
 pub use self::scale::{Scale, WithRange};
 pub use self::transform::{Negate, Transform};
-pub use self::combine::{Add, Combine};
+pub use self::combine::{Add, Combine, Multiply};
 pub use self::filter::Clamp;
-pub use self::generate::Constant;
+pub use self::generate::{Constant, FunctionValue};
 
 use super::noise::Noise;
 
@@ -43,6 +43,14 @@ pub trait NoiseExt: super::noise::Noise + Sized {
         N2: Noise<IndexType = Self::IndexType, DimType = Self::DimType>,
     {
         Add::new(self, right_noise)
+    }
+
+    fn multiply<N2>(self, right_noise: N2) -> Multiply<Self, N2>
+    where
+        Self::DimType: TupleUtil<u32>,
+        N2: Noise<IndexType = Self::IndexType, DimType = Self::DimType>,
+    {
+        Multiply::new(self, right_noise)
     }
 
     fn negate(self) -> Negate<Self> {
