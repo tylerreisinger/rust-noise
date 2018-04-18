@@ -12,14 +12,17 @@ pub use self::combine::{Add, Blend, Combine, Multiply, Select};
 pub use self::extend::{Extension2d, Extension3d};
 pub use self::filter::{Clamp, Filter, FilterKind};
 pub use self::generate::{Constant, FunctionValue};
-pub use self::input::{ScaleInput, ShiftInput};
+pub use self::input::{ClampInput, ScaleInput, ShiftInput, WrapInput};
 pub use self::scale::{Scale, WithRange};
 pub use self::slice::{Slice1d, Slice2d};
 pub use self::transform::{Negate, Transform};
 
-use super::noise::Noise;
+use super::noise::{Noise, PointUtil};
 
-pub trait NoiseExt: Noise + Sized {
+pub trait NoiseExt: Noise + Sized
+where
+    Self::IndexType: PointUtil<f64>,
+{
     fn scale(self, amplitude: f64) -> Scale<Self> {
         Scale::new(self, amplitude)
     }
@@ -100,11 +103,18 @@ pub trait NoiseExt: Noise + Sized {
     fn shift_input(self, shift: Self::IndexType) -> ShiftInput<Self> {
         ShiftInput::new(self, shift)
     }
+    fn clamp_input(self, low: Self::IndexType, high: Self::IndexType) -> ClampInput<Self> {
+        ClampInput::new(self, low, high)
+    }
+    fn wrap_input(self, low: Self::IndexType, high: Self::IndexType) -> WrapInput<Self> {
+        WrapInput::new(self, low, high)
+    }
 }
 
 impl<N> NoiseExt for N
 where
     N: Noise,
+    N::IndexType: PointUtil<f64>,
 {
 }
 
