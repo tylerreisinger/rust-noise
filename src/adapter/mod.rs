@@ -3,6 +3,7 @@ pub mod combine;
 pub mod extend;
 pub mod filter;
 pub mod generate;
+pub mod input;
 pub mod scale;
 pub mod slice;
 pub mod transform;
@@ -11,6 +12,7 @@ pub use self::combine::{Add, Blend, Combine, Multiply, Select};
 pub use self::extend::{Extension2d, Extension3d};
 pub use self::filter::{Clamp, Filter, FilterKind};
 pub use self::generate::{Constant, FunctionValue};
+pub use self::input::{ScaleInput, ShiftInput};
 pub use self::scale::{Scale, WithRange};
 pub use self::slice::{Slice1d, Slice2d};
 pub use self::transform::{Negate, Transform};
@@ -90,6 +92,13 @@ pub trait NoiseExt: Noise + Sized {
         F: Fn(f64, f64, f64) -> f64,
     {
         Filter::new(self, start, end, kind, blend_fn)
+    }
+
+    fn scale_input(self, scale: Self::IndexType) -> ScaleInput<Self> {
+        ScaleInput::new(self, scale)
+    }
+    fn shift_input(self, shift: Self::IndexType) -> ShiftInput<Self> {
+        ShiftInput::new(self, shift)
     }
 }
 
