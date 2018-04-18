@@ -17,7 +17,7 @@ pub use self::transform::{Negate, Transform};
 
 use super::noise::Noise;
 
-pub trait NoiseExt: super::noise::Noise + Sized {
+pub trait NoiseExt: Noise + Sized {
     fn scale(self, amplitude: f64) -> Scale<Self> {
         Scale::new(self, amplitude)
     }

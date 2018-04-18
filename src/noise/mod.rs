@@ -8,7 +8,11 @@ pub use noise::perlin::{Perlin1d, Perlin2d, Perlin3d};
 pub use noise::octave::{Octave, OctaveNoise};
 
 use adapter::{Extension2d, Extension3d, Slice1d, Slice2d};
-use cgmath::{Vector2, Vector3};
+
+pub type Point1<T> = T;
+pub type Point2<T> = [T; 2];
+pub type Point3<T> = [T; 3];
+pub type Point4<T> = [T; 4];
 
 pub trait GradientBuilder {
     type Output;
@@ -25,7 +29,7 @@ pub trait Noise {
     fn dimensions(&self) -> Self::DimType;
 }
 
-pub trait Noise1d: Noise<IndexType = f64, DimType = (u32,)> + Sized {
+pub trait Noise1d: Noise<IndexType = Point1<f64>, DimType = (u32,)> + Sized {
     fn width(&self) -> u32 {
         self.dimensions().0
     }
@@ -34,7 +38,7 @@ pub trait Noise1d: Noise<IndexType = f64, DimType = (u32,)> + Sized {
         Extension2d::new(self)
     }
 }
-pub trait Noise2d: Noise<IndexType = Vector2<f64>, DimType = (u32, u32)> + Sized {
+pub trait Noise2d: Noise<IndexType = Point2<f64>, DimType = (u32, u32)> + Sized {
     fn width(&self) -> u32 {
         self.dimensions().0
     }
@@ -50,7 +54,7 @@ pub trait Noise2d: Noise<IndexType = Vector2<f64>, DimType = (u32, u32)> + Sized
     }
 }
 pub trait Noise3d
-    : Noise<IndexType = Vector3<f64>, DimType = (u32, u32, u32)> + Sized {
+    : Noise<IndexType = Point3<f64>, DimType = (u32, u32, u32)> + Sized {
     fn width(&self) -> u32 {
         self.dimensions().0
     }
@@ -118,11 +122,11 @@ where
 }
 impl<N> Noise2d for N
 where
-    N: Noise<IndexType = Vector2<f64>, DimType = (u32, u32)>,
+    N: Noise<IndexType = Point2<f64>, DimType = (u32, u32)>,
 {
 }
 impl<N> Noise3d for N
 where
-    N: Noise<IndexType = Vector3<f64>, DimType = (u32, u32, u32)>,
+    N: Noise<IndexType = Point3<f64>, DimType = (u32, u32, u32)>,
 {
 }

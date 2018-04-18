@@ -5,7 +5,7 @@ use cgmath::{InnerSpace, Vector3};
 
 use grid::{Grid, Grid3d};
 use interpolate::{InterpolationFunction, Lerp};
-use noise::{GradientBuilder, Noise, Noise1d, Noise2d, Noise3d};
+use noise::{GradientBuilder, Noise, Noise1d, Noise2d, Noise3d, Point1, Point2, Point3};
 use noise::octave::{Octave, OctaveNoise};
 
 #[derive(Clone, Debug)]
@@ -45,7 +45,7 @@ impl<P> Noise for Perlin1d<P>
 where
     P: InterpolationFunction,
 {
-    type IndexType = f64;
+    type IndexType = Point1<f64>;
     type DimType = (u32,);
 
     fn value_at(&self, pos: f64) -> f64 {
@@ -103,13 +103,13 @@ impl<P> Noise for Perlin2d<P>
 where
     P: InterpolationFunction,
 {
-    type IndexType = Vector2<f64>;
+    type IndexType = Point2<f64>;
     type DimType = (u32, u32);
 
-    fn value_at(&self, pos: Vector2<f64>) -> f64 {
+    fn value_at(&self, pos: Point2<f64>) -> f64 {
         let cell_pos = Vector2::new(
-            pos.x * f64::from(self.width()),
-            pos.y * f64::from(self.height()),
+            pos[0] * f64::from(self.width()),
+            pos[1] * f64::from(self.height()),
         );
         let x_0 = cell_pos.x as usize;
         let x_1 = x_0 + 1;
@@ -182,14 +182,14 @@ impl<P> Noise for Perlin3d<P>
 where
     P: InterpolationFunction,
 {
-    type IndexType = Vector3<f64>;
+    type IndexType = Point3<f64>;
     type DimType = (u32, u32, u32);
 
-    fn value_at(&self, pos: Vector3<f64>) -> f64 {
+    fn value_at(&self, pos: Point3<f64>) -> f64 {
         let cell_pos = Vector3::new(
-            pos.x * f64::from(self.width()),
-            pos.y * f64::from(self.height()),
-            pos.z * f64::from(self.depth()),
+            pos[0] * f64::from(self.width()),
+            pos[1] * f64::from(self.height()),
+            pos[2] * f64::from(self.depth()),
         );
 
         let x_0 = cell_pos.x as usize;

@@ -1,5 +1,4 @@
-use noise::Noise;
-use cgmath::{Vector2, Vector3};
+use noise::{Noise, Noise2d, Noise3d, Point1, Point2};
 
 #[derive(Debug, Clone)]
 pub struct Slice1d<N: Noise> {
@@ -29,13 +28,13 @@ where
 
 impl<N> Noise for Slice1d<N>
 where
-    N: Noise<IndexType = Vector2<f64>, DimType = (u32, u32)>,
+    N: Noise2d,
 {
-    type IndexType = f64;
+    type IndexType = Point1<f64>;
     type DimType = (u32,);
 
     fn value_at(&self, pos: Self::IndexType) -> f64 {
-        self.noise.value_at(Vector2::new(pos, self.height))
+        self.noise.value_at([pos, self.height])
     }
 
     fn dimensions(&self) -> Self::DimType {
@@ -62,13 +61,13 @@ where
 
 impl<N> Noise for Slice2d<N>
 where
-    N: Noise<IndexType = Vector3<f64>, DimType = (u32, u32, u32)>,
+    N: Noise3d,
 {
-    type IndexType = Vector2<f64>;
+    type IndexType = Point2<f64>;
     type DimType = (u32, u32);
 
     fn value_at(&self, pos: Self::IndexType) -> f64 {
-        self.noise.value_at(Vector3::new(pos.x, pos.y, self.depth))
+        self.noise.value_at([pos[0], pos[1], self.depth])
     }
 
     fn dimensions(&self) -> Self::DimType {
