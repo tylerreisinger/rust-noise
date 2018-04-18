@@ -17,7 +17,7 @@ pub use self::scale::{Scale, WithRange};
 pub use self::slice::{Slice1d, Slice2d};
 pub use self::transform::{Negate, Transform};
 
-use super::noise::{Noise, PointUtil};
+use super::noise::{Noise, PointUtil, TupleUtil};
 
 pub trait NoiseExt: Noise + Sized
 where
@@ -116,47 +116,4 @@ where
     N: Noise,
     N::IndexType: PointUtil<f64>,
 {
-}
-
-pub trait TupleUtil<T> {
-    fn max(&self, other: &Self) -> Self;
-    fn saturate(val: u32) -> Self;
-}
-
-impl TupleUtil<u32> for (u32,) {
-    fn max(&self, rhs: &(u32,)) -> (u32,) {
-        (self.0.max(rhs.0),)
-    }
-    fn saturate(val: u32) -> (u32,) {
-        (val,)
-    }
-}
-impl TupleUtil<u32> for (u32, u32) {
-    fn max(&self, rhs: &(u32, u32)) -> (u32, u32) {
-        (self.0.max(rhs.0), self.1.max(rhs.1))
-    }
-    fn saturate(val: u32) -> (u32, u32) {
-        (val, val)
-    }
-}
-impl TupleUtil<u32> for (u32, u32, u32) {
-    fn max(&self, rhs: &(u32, u32, u32)) -> (u32, u32, u32) {
-        (self.0.max(rhs.0), self.1.max(rhs.1), self.2.max(rhs.2))
-    }
-    fn saturate(val: u32) -> (u32, u32, u32) {
-        (val, val, val)
-    }
-}
-impl TupleUtil<u32> for (u32, u32, u32, u32) {
-    fn max(&self, rhs: &(u32, u32, u32, u32)) -> (u32, u32, u32, u32) {
-        (
-            self.0.max(rhs.0),
-            self.1.max(rhs.1),
-            self.2.max(rhs.2),
-            self.3.max(rhs.3),
-        )
-    }
-    fn saturate(val: u32) -> (u32, u32, u32, u32) {
-        (val, val, val, val)
-    }
 }

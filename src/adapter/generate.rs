@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 use noise::Noise;
-use super::TupleUtil;
+use noise::TupleUtil;
 
 #[derive(Clone, Debug)]
 pub struct Constant<I, D> {

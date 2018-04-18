@@ -5,8 +5,8 @@ use cgmath::{InnerSpace, Vector3};
 
 use grid::{Grid, Grid3d};
 use interpolate::{InterpolationFunction, Lerp};
-use noise::{GradientBuilder, Noise, Noise1d, Noise2d, Noise3d, Point1, Point2, Point3};
-use noise::octave::{Octave, OctaveNoise};
+use noise::{GradientBuilder, Noise, Noise1d, Noise2d, Noise3d, Point1, Point2, Point3, TupleUtil};
+use noise::octave::{build_geometric_fractal_noise, Octave, OctaveNoise};
 
 #[derive(Clone, Debug)]
 pub struct Perlin1d<P: InterpolationFunction> {
@@ -26,7 +26,7 @@ pub struct Perlin3d<P: InterpolationFunction> {
 
 impl<P> Perlin1d<P>
 where
-    P: InterpolationFunction,
+    P: InterpolationFunction + Clone,
 {
     pub fn new<T>(size: u32, builder: &mut T, interp: P) -> Perlin1d<P>
     where
@@ -38,6 +38,29 @@ where
             grid: data,
             interp: interp,
         }
+    }
+
+    pub fn build_geometric_octaves<G>(
+        initial_frequency: u32,
+        num_octaves: u32,
+        octave_scaling: u32,
+        persistance: f64,
+        gradient_builder: &mut G,
+        interpolator: P,
+    ) -> OctaveNoise<Self>
+    where
+        G: GradientBuilder<Output = f64>,
+        Self: Noise<DimType = (u32,)>,
+    {
+        build_geometric_fractal_noise::<Self, _>(
+            (initial_frequency,),
+            num_octaves,
+            (octave_scaling,),
+            persistance,
+            &mut move |_, frequency, _| {
+                Perlin1d::new(frequency.0, gradient_builder, interpolator.clone())
+            },
+        )
     }
 }
 
@@ -81,7 +104,7 @@ where
 
 impl<P> Perlin2d<P>
 where
-    P: InterpolationFunction,
+    P: InterpolationFunction + Clone,
 {
     pub fn new<T>(dimensions: (u32, u32), builder: &mut T, interp: P) -> Perlin2d<P>
     where
@@ -96,6 +119,28 @@ where
             grid: Grid::with_data(width + 1, height + 1, data),
             interp: interp,
         }
+    }
+    pub fn build_geometric_octaves<G>(
+        initial_frequency: <Self as Noise>::DimType,
+        num_octaves: u32,
+        octave_scaling: <Self as Noise>::DimType,
+        persistance: f64,
+        gradient_builder: &mut G,
+        interpolator: P,
+    ) -> OctaveNoise<Self>
+    where
+        G: GradientBuilder<Output = Vector2<f64>>,
+        <Self as Noise>::DimType: TupleUtil<u32>,
+    {
+        build_geometric_fractal_noise(
+            initial_frequency,
+            num_octaves,
+            octave_scaling,
+            persistance,
+            &mut move |_, frequency, _| {
+                Perlin2d::new(frequency, gradient_builder, interpolator.clone())
+            },
+        )
     }
 }
 
@@ -160,7 +205,7 @@ where
 
 impl<P> Perlin3d<P>
 where
-    P: InterpolationFunction,
+    P: InterpolationFunction + Clone,
 {
     pub fn new<T>(dimensions: (u32, u32, u32), builder: &mut T, interp: P) -> Perlin3d<P>
     where
@@ -175,6 +220,29 @@ where
             grid: Grid3d::with_data(width + 1, height + 1, depth + 1, data),
             interp: interp,
         }
+    }
+
+    pub fn build_geometric_octaves<G>(
+        initial_frequency: <Self as Noise>::DimType,
+        num_octaves: u32,
+        octave_scaling: <Self as Noise>::DimType,
+        persistance: f64,
+        gradient_builder: &mut G,
+        interpolator: P,
+    ) -> OctaveNoise<Self>
+    where
+        G: GradientBuilder<Output = Vector3<f64>>,
+        <Self as Noise>::DimType: TupleUtil<u32>,
+    {
+        build_geometric_fractal_noise(
+            initial_frequency,
+            num_octaves,
+            octave_scaling,
+            persistance,
+            &mut move |_, frequency, _| {
+                Perlin3d::new(frequency, gradient_builder, interpolator.clone())
+            },
+        )
     }
 }
 
@@ -255,116 +323,4 @@ where
             self.grid.depth() - 1,
         )
     }
-}
-
-pub fn build_geometric_octaves<P, G>(
-    start_dimensions: (u32, u32),
-    num_octaves: u32,
-    denominator: f64,
-    gradient_builder: &mut G,
-    interpolator: &P,
-) -> OctaveNoise<Perlin2d<P>>
-where
-    G: GradientBuilder<Output = Vector2<f64>>,
-    P: InterpolationFunction + Clone,
-{
-    let mut octaves = Vec::with_capacity(num_octaves as usize);
-    let amplitude_multiplier: f64 = 1.0
-        / (0..num_octaves)
-            .map(|x| 1.0 / (denominator.powi(x as i32 + 1)))
-            .sum::<f64>();
-
-    for i in 0..num_octaves {
-        let amplitude = (1.0 / (denominator.powi(i as i32 + 1))) * amplitude_multiplier;
-        let octave = Octave::new(
-            Perlin2d::new(
-                (start_dimensions.0 << i, start_dimensions.1 << i),
-                gradient_builder,
-                interpolator.clone(),
-            ),
-            amplitude,
-        );
-        octaves.push(octave);
-    }
-
-    OctaveNoise::from_octaves(octaves)
-}
-
-pub fn build_arithmetic_octaves<P, G>(
-    start_dimensions: (u32, u32),
-    num_octaves: u32,
-    denominator: f64,
-    size_modifier: u32,
-    gradient_builder: &mut G,
-    interpolator: &P,
-) -> OctaveNoise<Perlin2d<P>>
-where
-    G: GradientBuilder<Output = Vector2<f64>>,
-    P: InterpolationFunction + Clone,
-{
-    let mut octaves = Vec::with_capacity(num_octaves as usize);
-    let amplitude_multiplier: f64 = 1.0
-        / (0..num_octaves)
-            .map(|x| 1.0 / (denominator * f64::from(x + 1)))
-            .sum::<f64>();
-
-    let initial_octave = Octave::new(
-        Perlin2d::new(start_dimensions, gradient_builder, interpolator.clone()),
-        (1.0 / denominator) * amplitude_multiplier,
-    );
-    octaves.push(initial_octave);
-    for i in 1..num_octaves {
-        let amplitude = (1.0 / (denominator * f64::from(i + 1))) * amplitude_multiplier;
-        let octave = Octave::new(
-            Perlin2d::new(
-                (
-                    start_dimensions.0 * i * size_modifier,
-                    start_dimensions.1 * i * size_modifier,
-                ),
-                gradient_builder,
-                interpolator.clone(),
-            ),
-            amplitude,
-        );
-        octaves.push(octave);
-    }
-
-    OctaveNoise::from_octaves(octaves)
-}
-
-pub fn build_geometric_octaves_3d<P, G>(
-    start_dimensions: (u32, u32, u32),
-    num_octaves: u32,
-    denominator: f64,
-    gradient_builder: &mut G,
-    interpolator: &P,
-) -> OctaveNoise<Perlin3d<P>>
-where
-    G: GradientBuilder<Output = Vector3<f64>>,
-    P: InterpolationFunction + Clone,
-{
-    let mut octaves = Vec::with_capacity(num_octaves as usize);
-    let amplitude_multiplier: f64 = 1.0
-        / (0..num_octaves)
-            .map(|x| 1.0 / (denominator.powi(x as i32 + 1)))
-            .sum::<f64>();
-
-    for i in 0..num_octaves {
-        let amplitude = (1.0 / (denominator.powi(i as i32 + 1))) * amplitude_multiplier;
-        let octave = Octave::new(
-            Perlin3d::new(
-                (
-                    start_dimensions.0 << i,
-                    start_dimensions.1 << i,
-                    start_dimensions.2,
-                ),
-                gradient_builder,
-                interpolator.clone(),
-            ),
-            amplitude,
-        );
-        octaves.push(octave);
-    }
-
-    OctaveNoise::from_octaves(octaves)
 }

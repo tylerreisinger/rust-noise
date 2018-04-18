@@ -1,6 +1,6 @@
 use std::fmt;
 
-use noise::Noise;
+use noise::{Noise, PointUtil, TupleUtil};
 
 #[derive(Clone, Debug)]
 pub struct Octave<T: Noise> {
@@ -110,4 +110,37 @@ where
         }
         writeln!(f, "]")
     }
+}
+
+pub fn build_geometric_fractal_noise<N, F>(
+    initial_frequency: N::DimType,
+    num_octaves: u32,
+    octave_scaling: N::DimType,
+    persistance: f64,
+    noise_builder: &mut F,
+) -> OctaveNoise<N>
+where
+    N: Noise,
+    N::DimType: TupleUtil<u32> + Clone,
+    F: FnMut(u32, N::DimType, f64) -> N,
+{
+    let mut octaves = Vec::with_capacity(num_octaves as usize);
+    let amplitude_multiplier: f64 = 1.0
+        / (0..num_octaves)
+            .map(|x| 1.0 / (persistance.powi(x as i32 + 1)))
+            .sum::<f64>();
+
+    let scaling = octave_scaling;
+    let mut frequency = initial_frequency;
+    for i in 0..num_octaves {
+        let amplitude = (1.0 / persistance.powi(i as i32 + 1)) * amplitude_multiplier;
+        frequency = frequency.apply(scaling.clone(), |f, s| f * s);
+        let octave = Octave::new(
+            noise_builder(i as u32, frequency.clone(), amplitude),
+            amplitude,
+        );
+        octaves.push(octave);
+    }
+
+    OctaveNoise::from_octaves(octaves)
 }

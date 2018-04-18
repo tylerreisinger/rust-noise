@@ -127,3 +127,78 @@ where
     N: Noise<IndexType = Point3<f64>, DimType = (u32, u32, u32)>,
 {
 }
+
+pub trait TupleUtil<T> {
+    fn max(&self, other: &Self) -> Self;
+    fn saturate(val: u32) -> Self;
+    fn apply<F>(self, rhs: Self, f: F) -> Self
+    where
+        F: Fn(T, T) -> T;
+}
+
+impl TupleUtil<u32> for (u32,) {
+    fn max(&self, rhs: &(u32,)) -> (u32,) {
+        (self.0.max(rhs.0),)
+    }
+    fn saturate(val: u32) -> (u32,) {
+        (val,)
+    }
+    fn apply<F>(self, rhs: Self, f: F) -> Self
+    where
+        F: Fn(u32, u32) -> u32,
+    {
+        (f(self.0, rhs.0),)
+    }
+}
+impl TupleUtil<u32> for (u32, u32) {
+    fn max(&self, rhs: &(u32, u32)) -> (u32, u32) {
+        (self.0.max(rhs.0), self.1.max(rhs.1))
+    }
+    fn saturate(val: u32) -> (u32, u32) {
+        (val, val)
+    }
+    fn apply<F>(self, rhs: Self, f: F) -> Self
+    where
+        F: Fn(u32, u32) -> u32,
+    {
+        (f(self.0, rhs.0), f(self.1, rhs.1))
+    }
+}
+impl TupleUtil<u32> for (u32, u32, u32) {
+    fn max(&self, rhs: &(u32, u32, u32)) -> (u32, u32, u32) {
+        (self.0.max(rhs.0), self.1.max(rhs.1), self.2.max(rhs.2))
+    }
+    fn saturate(val: u32) -> (u32, u32, u32) {
+        (val, val, val)
+    }
+    fn apply<F>(self, rhs: Self, f: F) -> Self
+    where
+        F: Fn(u32, u32) -> u32,
+    {
+        (f(self.0, rhs.0), f(self.1, rhs.1), f(self.2, rhs.2))
+    }
+}
+impl TupleUtil<u32> for (u32, u32, u32, u32) {
+    fn max(&self, rhs: &(u32, u32, u32, u32)) -> (u32, u32, u32, u32) {
+        (
+            self.0.max(rhs.0),
+            self.1.max(rhs.1),
+            self.2.max(rhs.2),
+            self.3.max(rhs.3),
+        )
+    }
+    fn saturate(val: u32) -> (u32, u32, u32, u32) {
+        (val, val, val, val)
+    }
+    fn apply<F>(self, rhs: Self, f: F) -> Self
+    where
+        F: Fn(u32, u32) -> u32,
+    {
+        (
+            f(self.0, rhs.0),
+            f(self.1, rhs.1),
+            f(self.2, rhs.2),
+            f(self.3, rhs.3),
+        )
+    }
+}

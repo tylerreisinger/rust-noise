@@ -168,7 +168,6 @@ where
             if wrapped < 0.0 {
                 wrapped += range;
             }
-            println!("{} {} {} {}", x, scaled, wrapped, wrapped + low);
             wrapped + low
         });
         self.noise.value_at(wrapped_pos)
