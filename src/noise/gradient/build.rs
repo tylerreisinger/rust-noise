@@ -3,8 +3,7 @@ use std::f64;
 use rand;
 use rand::distributions::{self, IndependentSample};
 use cgmath::{Vector2, Vector3};
-
-use noise::GradientBuilder;
+use super::GradientBuilder;
 
 #[derive(Debug, Clone)]
 pub struct RandomGradientBuilder1d<R: rand::Rng> {

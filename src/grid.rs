@@ -1,4 +1,6 @@
 use std::ops::{Index, IndexMut};
+use noise::gradient::GradientProvider;
+use noise::{Point2, Point3};
 
 #[derive(Clone, Debug)]
 pub struct Grid<T> {
@@ -61,6 +63,16 @@ impl<T> Grid<T> {
     }
     pub fn data_mut(&mut self) -> &mut [T] {
         &mut self.data
+    }
+}
+
+impl<T> GradientProvider<Point2<u32>> for Grid<T>
+where
+    T: Clone,
+{
+    type Output = T;
+    fn get_gradient(&self, index: &Point2<u32>) -> &Self::Output {
+        &self.data[(index[0] + index[1] * self.width()) as usize]
     }
 }
 
@@ -167,5 +179,14 @@ impl<T> IndexMut<(usize, usize, usize)> for Grid3d<T> {
     fn index_mut(&mut self, index: (usize, usize, usize)) -> &mut Self::Output {
         let idx = self.index_from_coords(index);
         &mut self.data[idx]
+    }
+}
+impl<T> GradientProvider<Point3<u32>> for Grid3d<T>
+where
+    T: Clone,
+{
+    type Output = T;
+    fn get_gradient(&self, index: &Point3<u32>) -> &Self::Output {
+        &self[(index[0] as usize, index[1] as usize, index[2] as usize)]
     }
 }

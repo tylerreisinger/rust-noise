@@ -121,7 +121,7 @@ pub fn build_geometric_fractal_noise<N, F>(
 ) -> OctaveNoise<N>
 where
     N: Noise,
-    N::DimType: TupleUtil<u32> + Clone,
+    N::DimType: TupleUtil<u32> + Clone + fmt::Debug,
     F: FnMut(u32, N::DimType, f64) -> N,
 {
     let mut octaves = Vec::with_capacity(num_octaves as usize);

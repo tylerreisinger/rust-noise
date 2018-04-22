@@ -6,7 +6,7 @@ use cgmath::{InnerSpace, Vector3};
 use grid::{Grid, Grid3d};
 use interpolate::{InterpolationFunction, Lerp};
 use noise::{GradientBuilder, Noise, Noise1d, Noise2d, Noise3d, Point1, Point2, Point3, TupleUtil};
-use noise::octave::{build_geometric_fractal_noise, Octave, OctaveNoise};
+use noise::octave::{build_geometric_fractal_noise, OctaveNoise};
 
 #[derive(Clone, Debug)]
 pub struct Perlin1d<P: InterpolationFunction> {

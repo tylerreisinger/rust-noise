@@ -1,21 +1,17 @@
 pub mod gradient;
+pub mod gridless;
 pub mod perlin;
 pub mod point;
 pub mod octave;
 
-pub use noise::gradient::{CubeGradientBuilder1d, CubeGradientBuilder2d, RandomGradientBuilder1d,
-                          RandomGradientBuilder2d, RandomGradientBuilder3d};
+pub use noise::gradient::{CubeGradientBuilder1d, CubeGradientBuilder2d, GradientBuilder,
+                          RandomGradientBuilder1d, RandomGradientBuilder2d,
+                          RandomGradientBuilder3d};
 pub use noise::perlin::{Perlin1d, Perlin2d, Perlin3d};
 pub use noise::octave::{Octave, OctaveNoise};
 pub use noise::point::{Point1, Point2, Point3, Point4, PointUtil};
 
 use adapter::{Extension2d, Extension3d, Slice1d, Slice2d};
-
-pub trait GradientBuilder {
-    type Output;
-
-    fn make_gradient(&mut self) -> Self::Output;
-}
 
 pub trait Noise {
     type IndexType: Clone;
