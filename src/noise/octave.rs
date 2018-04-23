@@ -1,6 +1,6 @@
 use std::fmt;
 
-use noise::{Noise, PointUtil, TupleUtil};
+use noise::{Noise, TupleUtil};
 
 #[derive(Clone, Debug)]
 pub struct Octave<T: Noise> {

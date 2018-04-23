@@ -3,44 +3,54 @@ use std::f64;
 use cgmath::Vector2;
 use cgmath::{InnerSpace, Vector3};
 
-use grid::{Grid, Grid3d};
 use interpolate::{InterpolationFunction, Lerp};
-use noise::{GradientBuilder, Noise, Noise1d, Noise2d, Noise3d, Point1, Point2, Point3, TupleUtil};
-use noise::octave::{build_geometric_fractal_noise, OctaveNoise};
+use noise::{GradientProvider, Noise, Noise1d, Noise2d, Noise3d, Point1, Point2, Point3};
 
 #[derive(Clone, Debug)]
-pub struct Perlin1d<P: InterpolationFunction> {
-    grid: Vec<f64>,
+pub struct Perlin1d<G, P>
+where
+    G: GradientProvider<Point1<u32>>,
+    P: InterpolationFunction,
+{
+    size: u32,
+    gradients: G,
     interp: P,
 }
 #[derive(Clone, Debug)]
-pub struct Perlin2d<P: InterpolationFunction> {
-    grid: Grid<Vector2<f64>>,
+pub struct Perlin2d<G, P>
+where
+    G: GradientProvider<Point2<u32>>,
+    P: InterpolationFunction,
+{
+    dimensions: (u32, u32),
+    gradients: G,
     interp: P,
 }
 #[derive(Debug, Clone)]
-pub struct Perlin3d<P: InterpolationFunction> {
-    grid: Grid3d<Vector3<f64>>,
+pub struct Perlin3d<G, P>
+where
+    G: GradientProvider<Point3<u32>>,
+    P: InterpolationFunction,
+{
+    dimensions: (u32, u32, u32),
+    gradients: G,
     interp: P,
 }
 
-impl<P> Perlin1d<P>
+impl<G, P> Perlin1d<G, P>
 where
-    P: InterpolationFunction + Clone,
+    G: GradientProvider<Point1<u32>, DimType = (u32,)>,
+    P: InterpolationFunction,
 {
-    pub fn new<T>(size: u32, builder: &mut T, interp: P) -> Perlin1d<P>
-    where
-        T: GradientBuilder<Output = f64>,
-    {
-        let data = (0..size).map(|_| builder.make_gradient()).collect();
-
+    pub fn new(size: u32, gradients: G, interp: P) -> Perlin1d<G, P> {
         Perlin1d {
-            grid: data,
-            interp: interp,
+            size,
+            gradients,
+            interp,
         }
     }
 
-    pub fn build_geometric_octaves<G>(
+    /*pub fn build_geometric_octaves<G>(
         initial_frequency: u32,
         num_octaves: u32,
         octave_scaling: u32,
@@ -61,11 +71,12 @@ where
                 Perlin1d::new(frequency.0, gradient_builder, interpolator.clone())
             },
         )
-    }
+    }*/
 }
 
-impl<P> Noise for Perlin1d<P>
+impl<G, P> Noise for Perlin1d<G, P>
 where
+    G: GradientProvider<Point1<u32>, Output = f64>,
     P: InterpolationFunction,
 {
     type IndexType = Point1<f64>;
@@ -73,12 +84,15 @@ where
 
     fn value_at(&self, pos: f64) -> f64 {
         let cell_pos = pos * f64::from(self.width());
-        let x_0 = cell_pos as usize;
+        let x_0 = cell_pos as u32;
         let x_1 = x_0 + 1;
 
         let rel_pos = cell_pos - cell_pos.floor();
 
-        let gradients = [self.grid[x_0], self.grid[x_1]];
+        let gradients = [
+            *self.gradients.get_gradient(&x_0),
+            *self.gradients.get_gradient(&x_1),
+        ];
         let rel_points = [0.0, 1.0];
 
         let distances = rel_points.iter().map(|x| rel_pos - x);
@@ -98,29 +112,26 @@ where
     }
 
     fn dimensions(&self) -> (u32,) {
-        (self.grid.len() as u32 - 1,)
+        (self.size,)
     }
 }
 
-impl<P> Perlin2d<P>
+impl<G, P> Perlin2d<G, P>
 where
-    P: InterpolationFunction + Clone,
+    G: GradientProvider<Point2<u32>, DimType = (u32, u32)>,
+    P: InterpolationFunction,
 {
-    pub fn new<T>(dimensions: (u32, u32), builder: &mut T, interp: P) -> Perlin2d<P>
-    where
-        T: GradientBuilder<Output = Vector2<f64>>,
-    {
-        let (width, height) = dimensions;
-        let size = ((width + 1) as usize) * ((height + 1) as usize);
-
-        let data = (0..size).map(|_| builder.make_gradient()).collect();
-
+    pub fn new(dimensions: (u32, u32), gradients: G, interp: P) -> Perlin2d<G, P> {
+        if let Some(dim) = gradients.dimensions() {
+            assert!(dimensions <= dim, "The gradient provider has a smaller maximum size than the requested noise frequency.");
+        }
         Perlin2d {
-            grid: Grid::with_data(width + 1, height + 1, data),
-            interp: interp,
+            dimensions,
+            gradients,
+            interp,
         }
     }
-    pub fn build_geometric_octaves<G>(
+    /*pub fn build_geometric_octaves<G>(
         initial_frequency: <Self as Noise>::DimType,
         num_octaves: u32,
         octave_scaling: <Self as Noise>::DimType,
@@ -141,11 +152,12 @@ where
                 Perlin2d::new(frequency, gradient_builder, interpolator.clone())
             },
         )
-    }
+    }*/
 }
 
-impl<P> Noise for Perlin2d<P>
+impl<G, P> Noise for Perlin2d<G, P>
 where
+    G: GradientProvider<Point2<u32>, Output = Vector2<f64>>,
     P: InterpolationFunction,
 {
     type IndexType = Point2<f64>;
@@ -156,9 +168,9 @@ where
             pos[0] * f64::from(self.width()),
             pos[1] * f64::from(self.height()),
         );
-        let x_0 = cell_pos.x as usize;
+        let x_0 = cell_pos.x as u32;
         let x_1 = x_0 + 1;
-        let y_0 = cell_pos.y as usize;
+        let y_0 = cell_pos.y as u32;
         let y_1 = y_0 + 1;
 
         let rel_x = cell_pos.x - cell_pos.x.floor();
@@ -166,10 +178,10 @@ where
         let rel_pos = Vector2::new(rel_x, rel_y);
 
         let gradients = [
-            self.grid[(x_0, y_0)],
-            self.grid[(x_1, y_0)],
-            self.grid[(x_0, y_1)],
-            self.grid[(x_1, y_1)],
+            *self.gradients.get_gradient(&[x_0, y_0]),
+            *self.gradients.get_gradient(&[x_1, y_0]),
+            *self.gradients.get_gradient(&[x_0, y_1]),
+            *self.gradients.get_gradient(&[x_1, y_1]),
         ];
         let rel_points = [
             Vector2::new(0.0, 0.0),
@@ -199,30 +211,24 @@ where
     }
 
     fn dimensions(&self) -> (u32, u32) {
-        (self.grid.width() - 1, self.grid.height() - 1)
+        self.dimensions
     }
 }
 
-impl<P> Perlin3d<P>
+impl<G, P> Perlin3d<G, P>
 where
-    P: InterpolationFunction + Clone,
+    G: GradientProvider<Point3<u32>, Output = Vector3<f64>>,
+    P: InterpolationFunction,
 {
-    pub fn new<T>(dimensions: (u32, u32, u32), builder: &mut T, interp: P) -> Perlin3d<P>
-    where
-        T: GradientBuilder<Output = Vector3<f64>>,
-    {
-        let (width, height, depth) = dimensions;
-        let size = ((width + 1) as usize) * ((height + 1) as usize) * ((depth + 1) as usize);
-
-        let data = (0..size).map(|_| builder.make_gradient()).collect();
-
+    pub fn new(dimensions: (u32, u32, u32), gradients: G, interp: P) -> Perlin3d<G, P> {
         Perlin3d {
-            grid: Grid3d::with_data(width + 1, height + 1, depth + 1, data),
+            dimensions,
+            gradients,
             interp: interp,
         }
     }
 
-    pub fn build_geometric_octaves<G>(
+    /*pub fn build_geometric_octaves<G>(
         initial_frequency: <Self as Noise>::DimType,
         num_octaves: u32,
         octave_scaling: <Self as Noise>::DimType,
@@ -243,11 +249,12 @@ where
                 Perlin3d::new(frequency, gradient_builder, interpolator.clone())
             },
         )
-    }
+    }*/
 }
 
-impl<P> Noise for Perlin3d<P>
+impl<G, P> Noise for Perlin3d<G, P>
 where
+    G: GradientProvider<Point3<u32>, Output = Vector3<f64>>,
     P: InterpolationFunction,
 {
     type IndexType = Point3<f64>;
@@ -260,11 +267,11 @@ where
             pos[2] * f64::from(self.depth()),
         );
 
-        let x_0 = cell_pos.x as usize;
+        let x_0 = cell_pos.x as u32;
         let x_1 = x_0 + 1;
-        let y_0 = cell_pos.y as usize;
+        let y_0 = cell_pos.y as u32;
         let y_1 = y_0 + 1;
-        let z_0 = cell_pos.z as usize;
+        let z_0 = cell_pos.z as u32;
         let z_1 = z_0 + 1;
 
         let rel_x = cell_pos.x - cell_pos.x.floor();
@@ -273,14 +280,14 @@ where
         let rel_pos = Vector3::new(rel_x, rel_y, rel_z);
 
         let gradients = [
-            self.grid[(x_0, y_0, z_0)],
-            self.grid[(x_1, y_0, z_0)],
-            self.grid[(x_0, y_1, z_0)],
-            self.grid[(x_1, y_1, z_0)],
-            self.grid[(x_0, y_0, z_1)],
-            self.grid[(x_1, y_0, z_1)],
-            self.grid[(x_0, y_1, z_1)],
-            self.grid[(x_1, y_1, z_1)],
+            *self.gradients.get_gradient(&[x_0, y_0, z_0]),
+            *self.gradients.get_gradient(&[x_1, y_0, z_0]),
+            *self.gradients.get_gradient(&[x_0, y_1, z_0]),
+            *self.gradients.get_gradient(&[x_1, y_1, z_0]),
+            *self.gradients.get_gradient(&[x_0, y_0, z_1]),
+            *self.gradients.get_gradient(&[x_1, y_0, z_1]),
+            *self.gradients.get_gradient(&[x_0, y_1, z_1]),
+            *self.gradients.get_gradient(&[x_1, y_1, z_1]),
         ];
         let rel_points = [
             Vector3::new(0.0, 0.0, 0.0),
@@ -317,10 +324,6 @@ where
     }
 
     fn dimensions(&self) -> (u32, u32, u32) {
-        (
-            self.grid.width() - 1,
-            self.grid.height() - 1,
-            self.grid.depth() - 1,
-        )
+        self.dimensions
     }
 }

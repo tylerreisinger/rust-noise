@@ -45,9 +45,14 @@ where
     G: Clone,
 {
     type Output = G;
+    type DimType = (u32,);
 
     fn get_gradient(&self, index: &Point1<u32>) -> &G {
         &self.table[(*index as usize) % self.len()]
+    }
+
+    fn dimensions(&self) -> Option<Self::DimType> {
+        None
     }
 }
 
@@ -140,9 +145,13 @@ where
     G: Clone,
 {
     type Output = G;
+    type DimType = (u32,);
 
     fn get_gradient(&self, index: &Point1<u32>) -> &G {
         self.table.get_gradient(&self.hash_1d(*index))
+    }
+    fn dimensions(&self) -> Option<Self::DimType> {
+        None
     }
 }
 impl<G> GradientProvider<Point2<u32>> for PermutedGradientTable<G>
@@ -150,9 +159,13 @@ where
     G: Clone,
 {
     type Output = G;
+    type DimType = (u32, u32);
 
     fn get_gradient(&self, index: &Point2<u32>) -> &G {
         self.table.get_gradient(&self.hash_2d(*index))
+    }
+    fn dimensions(&self) -> Option<Self::DimType> {
+        None
     }
 }
 impl<G> GradientProvider<Point3<u32>> for PermutedGradientTable<G>
@@ -160,9 +173,13 @@ where
     G: Clone,
 {
     type Output = G;
+    type DimType = (u32, u32, u32);
 
     fn get_gradient(&self, index: &Point3<u32>) -> &G {
         self.table.get_gradient(&self.hash_3d(*index))
+    }
+    fn dimensions(&self) -> Option<Self::DimType> {
+        None
     }
 }
 impl<G> GradientProvider<Point4<u32>> for PermutedGradientTable<G>
@@ -170,8 +187,12 @@ where
     G: Clone,
 {
     type Output = G;
+    type DimType = (u32, u32, u32, u32);
 
     fn get_gradient(&self, index: &Point4<u32>) -> &G {
         self.table.get_gradient(&self.hash_4d(*index))
+    }
+    fn dimensions(&self) -> Option<Self::DimType> {
+        None
     }
 }
