@@ -34,13 +34,13 @@ where
     N: Noise1d,
 {
     type IndexType = Point2<f64>;
-    type DimType = (u32, u32);
+    type DimType = (f64, f64);
 
     fn value_at(&self, pos: Self::IndexType) -> f64 {
         self.noise.value_at(pos[0])
     }
-    fn dimensions(&self) -> Self::DimType {
-        (self.noise.width(), 1)
+    fn frequency(&self) -> Self::DimType {
+        (self.noise.width(), 0.0)
     }
 }
 
@@ -62,12 +62,12 @@ where
     N: Noise2d,
 {
     type IndexType = Point3<f64>;
-    type DimType = (u32, u32, u32);
+    type DimType = (f64, f64, f64);
 
     fn value_at(&self, pos: Self::IndexType) -> f64 {
         self.noise.value_at([pos[0], pos[1]])
     }
-    fn dimensions(&self) -> Self::DimType {
-        (self.noise.width(), self.noise.height(), 1)
+    fn frequency(&self) -> Self::DimType {
+        (self.noise.width(), self.noise.height(), 1.0)
     }
 }

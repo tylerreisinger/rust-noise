@@ -47,8 +47,8 @@ where
         let f = &self.transform;
         f(&pos, self.noise.value_at(pos.clone()))
     }
-    fn dimensions(&self) -> Self::DimType {
-        self.noise.dimensions()
+    fn frequency(&self) -> Self::DimType {
+        self.noise.frequency()
     }
 }
 
@@ -75,7 +75,7 @@ where
     fn value_at(&self, pos: Self::IndexType) -> f64 {
         -self.noise.value_at(pos)
     }
-    fn dimensions(&self) -> Self::DimType {
-        self.noise.dimensions()
+    fn frequency(&self) -> Self::DimType {
+        self.noise.frequency()
     }
 }

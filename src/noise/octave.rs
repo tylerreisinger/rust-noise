@@ -55,8 +55,8 @@ where
         self.noise.value_at(pos) * self.amplitude
     }
 
-    fn dimensions(&self) -> T::DimType {
-        self.noise.dimensions()
+    fn frequency(&self) -> T::DimType {
+        self.noise.frequency()
     }
 }
 
@@ -74,9 +74,9 @@ where
             .fold(0.0, |l, o| l + o.value_at(pos.clone()))
     }
 
-    fn dimensions(&self) -> T::DimType {
+    fn frequency(&self) -> T::DimType {
         if self.octaves.is_empty() {
-            self.octaves[0].dimensions()
+            self.octaves[0].frequency()
         } else {
             Default::default()
         }
@@ -89,12 +89,7 @@ where
     T::DimType: fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "Octave <{:?}, A={}>",
-            self.dimensions(),
-            self.amplitude()
-        )
+        write!(f, "Octave <{:?}, A={}>", self.frequency(), self.amplitude())
     }
 }
 

@@ -61,8 +61,8 @@ where
         self.noise.value_at(scaled_pos)
     }
 
-    fn dimensions(&self) -> N::DimType {
-        self.noise.dimensions()
+    fn frequency(&self) -> N::DimType {
+        self.noise.frequency()
     }
 }
 
@@ -92,8 +92,8 @@ where
         self.noise.value_at(shifted_pos)
     }
 
-    fn dimensions(&self) -> N::DimType {
-        self.noise.dimensions()
+    fn frequency(&self) -> N::DimType {
+        self.noise.frequency()
     }
 }
 
@@ -129,8 +129,8 @@ where
         self.noise.value_at(clamped_pos)
     }
 
-    fn dimensions(&self) -> N::DimType {
-        self.noise.dimensions()
+    fn frequency(&self) -> N::DimType {
+        self.noise.frequency()
     }
 }
 
@@ -173,7 +173,7 @@ where
         self.noise.value_at(wrapped_pos)
     }
 
-    fn dimensions(&self) -> N::DimType {
-        self.noise.dimensions()
+    fn frequency(&self) -> N::DimType {
+        self.noise.frequency()
     }
 }

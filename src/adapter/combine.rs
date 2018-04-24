@@ -88,7 +88,7 @@ where
 impl<N1, N2, F> Noise for Combine<N1, N2, F>
 where
     N1: Noise,
-    N1::DimType: TupleUtil<u32>,
+    N1::DimType: TupleUtil<f64>,
     N2: Noise<IndexType = N1::IndexType, DimType = N1::DimType>,
     F: Fn(f64, f64) -> f64,
 {
@@ -102,17 +102,17 @@ where
             self.right_noise.value_at(pos),
         )
     }
-    fn dimensions(&self) -> Self::DimType {
+    fn frequency(&self) -> Self::DimType {
         self.left_noise
-            .dimensions()
-            .max(&self.right_noise.dimensions())
+            .frequency()
+            .max(&self.right_noise.frequency())
     }
 }
 
 impl<N1, N2> Add<N1, N2>
 where
     N1: Noise,
-    N1::DimType: TupleUtil<u32>,
+    N1::DimType: TupleUtil<f64>,
     N2: Noise<IndexType = N1::IndexType, DimType = N1::DimType>,
 {
     pub fn new(left_noise: N1, right_noise: N2) -> Add<N1, N2> {
@@ -133,7 +133,7 @@ where
 impl<N1, N2> Noise for Add<N1, N2>
 where
     N1: Noise,
-    N1::DimType: TupleUtil<u32>,
+    N1::DimType: TupleUtil<f64>,
     N2: Noise<IndexType = N1::IndexType, DimType = N1::DimType>,
 {
     type IndexType = N1::IndexType;
@@ -142,17 +142,17 @@ where
     fn value_at(&self, pos: Self::IndexType) -> f64 {
         self.left_noise.value_at(pos.clone()) + self.right_noise.value_at(pos)
     }
-    fn dimensions(&self) -> Self::DimType {
+    fn frequency(&self) -> Self::DimType {
         self.left_noise
-            .dimensions()
-            .max(&self.right_noise.dimensions())
+            .frequency()
+            .max(&self.right_noise.frequency())
     }
 }
 
 impl<N1, N2> Multiply<N1, N2>
 where
     N1: Noise,
-    N1::DimType: TupleUtil<u32>,
+    N1::DimType: TupleUtil<f64>,
     N2: Noise<IndexType = N1::IndexType, DimType = N1::DimType>,
 {
     pub fn new(left_noise: N1, right_noise: N2) -> Multiply<N1, N2> {
@@ -173,7 +173,7 @@ where
 impl<N1, N2> Noise for Multiply<N1, N2>
 where
     N1: Noise,
-    N1::DimType: TupleUtil<u32>,
+    N1::DimType: TupleUtil<f64>,
     N2: Noise<IndexType = N1::IndexType, DimType = N1::DimType>,
 {
     type IndexType = N1::IndexType;
@@ -182,10 +182,10 @@ where
     fn value_at(&self, pos: Self::IndexType) -> f64 {
         self.left_noise.value_at(pos.clone()) * self.right_noise.value_at(pos)
     }
-    fn dimensions(&self) -> Self::DimType {
+    fn frequency(&self) -> Self::DimType {
         self.left_noise
-            .dimensions()
-            .max(&self.right_noise.dimensions())
+            .frequency()
+            .max(&self.right_noise.frequency())
     }
 }
 
@@ -225,7 +225,7 @@ where
 
 impl<N1, N2, N3> Noise for Select<N1, N2, N3>
 where
-    N1::DimType: TupleUtil<u32>,
+    N1::DimType: TupleUtil<f64>,
     N1: Noise,
     N2: Noise<IndexType = N1::IndexType, DimType = N1::DimType>,
     N3: Noise<IndexType = N1::IndexType, DimType = N1::DimType>,
@@ -241,10 +241,10 @@ where
             self.right_noise.value_at(pos)
         }
     }
-    fn dimensions(&self) -> Self::DimType {
+    fn frequency(&self) -> Self::DimType {
         self.left_noise
-            .dimensions()
-            .max(&self.right_noise.dimensions())
+            .frequency()
+            .max(&self.right_noise.frequency())
     }
 }
 
@@ -280,7 +280,7 @@ where
 
 impl<N1, N2, N3, F> Noise for Blend<N1, N2, N3, F>
 where
-    N1::DimType: TupleUtil<u32>,
+    N1::DimType: TupleUtil<f64>,
     N1: Noise,
     N2: Noise<IndexType = N1::IndexType, DimType = N1::DimType>,
     N3: Noise<IndexType = N1::IndexType, DimType = N1::DimType>,
@@ -297,9 +297,9 @@ where
         let f = &self.blend_fn;
         f(val1, val2, criteria)
     }
-    fn dimensions(&self) -> Self::DimType {
+    fn frequency(&self) -> Self::DimType {
         self.left_noise
-            .dimensions()
-            .max(&self.right_noise.dimensions())
+            .frequency()
+            .max(&self.right_noise.frequency())
     }
 }

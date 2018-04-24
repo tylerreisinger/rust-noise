@@ -60,8 +60,8 @@ where
             val
         }
     }
-    fn dimensions(&self) -> Self::DimType {
-        self.noise.dimensions()
+    fn frequency(&self) -> Self::DimType {
+        self.noise.frequency()
     }
 }
 
@@ -129,7 +129,7 @@ where
             x1
         }
     }
-    fn dimensions(&self) -> Self::DimType {
-        self.noise.dimensions()
+    fn frequency(&self) -> Self::DimType {
+        self.noise.frequency()
     }
 }

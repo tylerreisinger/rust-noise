@@ -64,8 +64,8 @@ where
     fn value_at(&self, pos: Self::IndexType) -> f64 {
         self.noise.value_at(pos) * self.amplitude
     }
-    fn dimensions(&self) -> Self::DimType {
-        self.noise.dimensions()
+    fn frequency(&self) -> Self::DimType {
+        self.noise.frequency()
     }
 }
 
@@ -81,7 +81,7 @@ where
 
         self.min + normalized_val * (self.max - self.min)
     }
-    fn dimensions(&self) -> Self::DimType {
-        self.noise.dimensions()
+    fn frequency(&self) -> Self::DimType {
+        self.noise.frequency()
     }
 }

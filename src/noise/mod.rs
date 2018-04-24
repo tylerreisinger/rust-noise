@@ -18,24 +18,24 @@ pub trait Noise {
 
     fn value_at(&self, pos: Self::IndexType) -> f64;
 
-    fn dimensions(&self) -> Self::DimType;
+    fn frequency(&self) -> Self::DimType;
 }
 
-pub trait Noise1d: Noise<IndexType = Point1<f64>, DimType = (u32,)> + Sized {
-    fn width(&self) -> u32 {
-        self.dimensions().0
+pub trait Noise1d: Noise<IndexType = Point1<f64>, DimType = (f64,)> + Sized {
+    fn width(&self) -> f64 {
+        self.frequency().0
     }
 
     fn extend(self) -> Extension2d<Self> {
         Extension2d::new(self)
     }
 }
-pub trait Noise2d: Noise<IndexType = Point2<f64>, DimType = (u32, u32)> + Sized {
-    fn width(&self) -> u32 {
-        self.dimensions().0
+pub trait Noise2d: Noise<IndexType = Point2<f64>, DimType = (f64, f64)> + Sized {
+    fn width(&self) -> f64 {
+        self.frequency().0
     }
-    fn height(&self) -> u32 {
-        self.dimensions().1
+    fn height(&self) -> f64 {
+        self.frequency().1
     }
 
     fn slice(self, height: f64) -> Slice1d<Self> {
@@ -46,15 +46,15 @@ pub trait Noise2d: Noise<IndexType = Point2<f64>, DimType = (u32, u32)> + Sized 
     }
 }
 pub trait Noise3d
-    : Noise<IndexType = Point3<f64>, DimType = (u32, u32, u32)> + Sized {
-    fn width(&self) -> u32 {
-        self.dimensions().0
+    : Noise<IndexType = Point3<f64>, DimType = (f64, f64, f64)> + Sized {
+    fn width(&self) -> f64 {
+        self.frequency().0
     }
-    fn height(&self) -> u32 {
-        self.dimensions().1
+    fn height(&self) -> f64 {
+        self.frequency().1
     }
-    fn depth(&self) -> u32 {
-        self.dimensions().2
+    fn depth(&self) -> f64 {
+        self.frequency().2
     }
 
     fn slice(self, depth: f64) -> Slice2d<Self> {
@@ -72,8 +72,8 @@ where
     fn value_at(&self, pos: Self::IndexType) -> f64 {
         (*self).value_at(pos)
     }
-    fn dimensions(&self) -> Self::DimType {
-        (*self).dimensions()
+    fn frequency(&self) -> Self::DimType {
+        (*self).frequency()
     }
 }
 
@@ -87,8 +87,8 @@ where
     fn value_at(&self, pos: Self::IndexType) -> f64 {
         (**self).value_at(pos)
     }
-    fn dimensions(&self) -> Self::DimType {
-        (**self).dimensions()
+    fn frequency(&self) -> Self::DimType {
+        (**self).frequency()
     }
 }
 
@@ -102,79 +102,79 @@ where
     fn value_at(&self, pos: Self::IndexType) -> f64 {
         (**self).value_at(pos)
     }
-    fn dimensions(&self) -> Self::DimType {
-        (**self).dimensions()
+    fn frequency(&self) -> Self::DimType {
+        (**self).frequency()
     }
 }
 
 impl<N> Noise1d for N
 where
-    N: Noise<IndexType = f64, DimType = (u32,)>,
+    N: Noise<IndexType = f64, DimType = (f64,)>,
 {
 }
 impl<N> Noise2d for N
 where
-    N: Noise<IndexType = Point2<f64>, DimType = (u32, u32)>,
+    N: Noise<IndexType = Point2<f64>, DimType = (f64, f64)>,
 {
 }
 impl<N> Noise3d for N
 where
-    N: Noise<IndexType = Point3<f64>, DimType = (u32, u32, u32)>,
+    N: Noise<IndexType = Point3<f64>, DimType = (f64, f64, f64)>,
 {
 }
 
 pub trait TupleUtil<T> {
     fn max(&self, other: &Self) -> Self;
-    fn saturate(val: u32) -> Self;
+    fn saturate(val: f64) -> Self;
     fn apply<F>(self, rhs: Self, f: F) -> Self
     where
         F: Fn(T, T) -> T;
 }
 
-impl TupleUtil<u32> for (u32,) {
-    fn max(&self, rhs: &(u32,)) -> (u32,) {
+impl TupleUtil<f64> for (f64,) {
+    fn max(&self, rhs: &(f64,)) -> (f64,) {
         (self.0.max(rhs.0),)
     }
-    fn saturate(val: u32) -> (u32,) {
+    fn saturate(val: f64) -> (f64,) {
         (val,)
     }
     fn apply<F>(self, rhs: Self, f: F) -> Self
     where
-        F: Fn(u32, u32) -> u32,
+        F: Fn(f64, f64) -> f64,
     {
         (f(self.0, rhs.0),)
     }
 }
-impl TupleUtil<u32> for (u32, u32) {
-    fn max(&self, rhs: &(u32, u32)) -> (u32, u32) {
+impl TupleUtil<f64> for (f64, f64) {
+    fn max(&self, rhs: &(f64, f64)) -> (f64, f64) {
         (self.0.max(rhs.0), self.1.max(rhs.1))
     }
-    fn saturate(val: u32) -> (u32, u32) {
+    fn saturate(val: f64) -> (f64, f64) {
         (val, val)
     }
     fn apply<F>(self, rhs: Self, f: F) -> Self
     where
-        F: Fn(u32, u32) -> u32,
+        F: Fn(f64, f64) -> f64,
     {
         (f(self.0, rhs.0), f(self.1, rhs.1))
     }
 }
-impl TupleUtil<u32> for (u32, u32, u32) {
-    fn max(&self, rhs: &(u32, u32, u32)) -> (u32, u32, u32) {
+impl TupleUtil<f64> for (f64, f64, f64) {
+    fn max(&self, rhs: &(f64, f64, f64)) -> (f64, f64, f64) {
         (self.0.max(rhs.0), self.1.max(rhs.1), self.2.max(rhs.2))
     }
-    fn saturate(val: u32) -> (u32, u32, u32) {
+    fn saturate(val: f64) -> (f64, f64, f64) {
         (val, val, val)
     }
     fn apply<F>(self, rhs: Self, f: F) -> Self
     where
-        F: Fn(u32, u32) -> u32,
+        F: Fn(f64, f64) -> f64,
     {
         (f(self.0, rhs.0), f(self.1, rhs.1), f(self.2, rhs.2))
     }
 }
-impl TupleUtil<u32> for (u32, u32, u32, u32) {
-    fn max(&self, rhs: &(u32, u32, u32, u32)) -> (u32, u32, u32, u32) {
+impl TupleUtil<f64> for (f64, f64, f64, f64) {
+    fn max(&self, rhs: &(f64, f64, f64, f64)) -> (f64, f64, f64, f64) {
         (
             self.0.max(rhs.0),
             self.1.max(rhs.1),
@@ -182,12 +182,12 @@ impl TupleUtil<u32> for (u32, u32, u32, u32) {
             self.3.max(rhs.3),
         )
     }
-    fn saturate(val: u32) -> (u32, u32, u32, u32) {
+    fn saturate(val: f64) -> (f64, f64, f64, f64) {
         (val, val, val, val)
     }
     fn apply<F>(self, rhs: Self, f: F) -> Self
     where
-        F: Fn(u32, u32) -> u32,
+        F: Fn(f64, f64) -> f64,
     {
         (
             f(self.0, rhs.0),

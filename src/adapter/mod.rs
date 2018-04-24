@@ -40,7 +40,7 @@ where
 
     fn combine<N2, F>(self, right_noise: N2, combiner: F) -> Combine<Self, N2, F>
     where
-        Self::DimType: TupleUtil<u32>,
+        Self::DimType: TupleUtil<f64>,
         N2: Noise<IndexType = Self::IndexType, DimType = Self::DimType>,
         F: Fn(f64, f64) -> f64,
     {
@@ -49,7 +49,7 @@ where
 
     fn select<N2, N3>(self, right_noise: N2, criteria: N3, threshold: f64) -> Select<Self, N2, N3>
     where
-        Self::DimType: TupleUtil<u32>,
+        Self::DimType: TupleUtil<f64>,
         N2: Noise<IndexType = Self::IndexType, DimType = Self::DimType>,
         N3: Noise<IndexType = Self::IndexType, DimType = Self::DimType>,
     {
@@ -58,7 +58,7 @@ where
 
     fn blend<N2, N3, F>(self, right_noise: N2, criteria: N3, blend_fn: F) -> Blend<Self, N2, N3, F>
     where
-        Self::DimType: TupleUtil<u32>,
+        Self::DimType: TupleUtil<f64>,
         N2: Noise<IndexType = Self::IndexType, DimType = Self::DimType>,
         N3: Noise<IndexType = Self::IndexType, DimType = Self::DimType>,
         F: Fn(f64, f64, f64) -> f64,
@@ -68,7 +68,7 @@ where
 
     fn add<N2>(self, right_noise: N2) -> Add<Self, N2>
     where
-        Self::DimType: TupleUtil<u32>,
+        Self::DimType: TupleUtil<f64>,
         N2: Noise<IndexType = Self::IndexType, DimType = Self::DimType>,
     {
         Add::new(self, right_noise)
@@ -76,7 +76,7 @@ where
 
     fn multiply<N2>(self, right_noise: N2) -> Multiply<Self, N2>
     where
-        Self::DimType: TupleUtil<u32>,
+        Self::DimType: TupleUtil<f64>,
         N2: Noise<IndexType = Self::IndexType, DimType = Self::DimType>,
     {
         Multiply::new(self, right_noise)

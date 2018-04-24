@@ -15,7 +15,7 @@ where
     G: GradientProvider<Point1<u32>>,
     P: InterpolationFunction,
 {
-    size: u32,
+    frequency: f64,
     gradients: G,
     interp: P,
 }
@@ -25,7 +25,7 @@ where
     G: GradientProvider<Point2<u32>>,
     P: InterpolationFunction,
 {
-    dimensions: (u32, u32),
+    frequency: (f64, f64),
     gradients: G,
     interp: P,
 }
@@ -35,7 +35,7 @@ where
     G: GradientProvider<Point3<u32>>,
     P: InterpolationFunction,
 {
-    dimensions: (u32, u32, u32),
+    frequency: (f64, f64, f64),
     gradients: G,
     interp: P,
 }
@@ -44,12 +44,13 @@ impl<G> Perlin1d<G, DefaultInterpolator>
 where
     G: GradientProvider<Point1<u32>, DimType = (u32,)>,
 {
-    pub fn new(size: u32, gradients: G) -> Perlin1d<G, DefaultInterpolator> {
+    pub fn new(frequency: f64, gradients: G) -> Perlin1d<G, DefaultInterpolator> {
         if let Some(dim) = gradients.dimensions() {
-            assert!((size,) <= dim, "The gradient provider has a smaller maximum size than the requested noise frequency.");
+            assert!((frequency,) <= (dim.0 as f64,)
+                    , "The gradient provider has a smaller maximum size than the requested noise frequency.");
         }
         Perlin1d {
-            size,
+            frequency,
             gradients,
             interp: DefaultInterpolator::new(),
         }
@@ -59,7 +60,7 @@ where
 impl Perlin1d<Grid1d<f64>, DefaultInterpolator> {
     pub fn from_grid(grid: Grid1d<f64>) -> Perlin1d<Grid1d<f64>, DefaultInterpolator> {
         Perlin1d {
-            size: grid.len() as u32,
+            frequency: grid.len() as f64,
             gradients: grid,
             interp: DefaultInterpolator::new(),
         }
@@ -77,7 +78,7 @@ where
     {
         Perlin1d {
             interp: interpolator,
-            size: self.size,
+            frequency: self.frequency,
             gradients: self.gradients,
         }
     }
@@ -112,10 +113,10 @@ where
     P: InterpolationFunction,
 {
     type IndexType = Point1<f64>;
-    type DimType = (u32,);
+    type DimType = (f64,);
 
     fn value_at(&self, pos: f64) -> f64 {
-        let cell_pos = pos * f64::from(self.width());
+        let cell_pos = pos * self.width();
         let rel_pos = cell_pos - cell_pos.floor();
 
         let x_0 = cell_pos as u32;
@@ -143,8 +144,8 @@ where
         Lerp::lerp(values[0], values[1], interp_coeff) * 2.0
     }
 
-    fn dimensions(&self) -> (u32,) {
-        (self.size,)
+    fn frequency(&self) -> (f64,) {
+        (self.frequency,)
     }
 }
 
@@ -152,12 +153,13 @@ impl<G> Perlin2d<G, DefaultInterpolator>
 where
     G: GradientProvider<Point2<u32>, DimType = (u32, u32)>,
 {
-    pub fn new(dimensions: (u32, u32), gradients: G) -> Perlin2d<G, DefaultInterpolator> {
+    pub fn new(frequency: (f64, f64), gradients: G) -> Perlin2d<G, DefaultInterpolator> {
         if let Some(dim) = gradients.dimensions() {
-            assert!(dimensions <= dim, "The gradient provider has a smaller maximum size than the requested noise frequency.");
+            assert!(frequency <= (dim.0 as f64, dim.1 as f64),
+                "The gradient provider has a smaller maximum size than the requested noise frequency.");
         }
         Perlin2d {
-            dimensions,
+            frequency,
             gradients,
             interp: DefaultInterpolator::new(),
         }
@@ -169,7 +171,7 @@ impl Perlin2d<Grid2d<Vector2<f64>>, DefaultInterpolator> {
         grid: Grid2d<Vector2<f64>>,
     ) -> Perlin2d<Grid2d<Vector2<f64>>, DefaultInterpolator> {
         Perlin2d {
-            dimensions: (grid.width(), grid.height()),
+            frequency: (grid.width() as f64, grid.height() as f64),
             gradients: grid,
             interp: DefaultInterpolator::new(),
         }
@@ -187,7 +189,7 @@ where
     {
         Perlin2d {
             interp: interpolator,
-            dimensions: self.dimensions,
+            frequency: self.frequency,
             gradients: self.gradients,
         }
     }
@@ -222,13 +224,10 @@ where
     P: InterpolationFunction,
 {
     type IndexType = Point2<f64>;
-    type DimType = (u32, u32);
+    type DimType = (f64, f64);
 
     fn value_at(&self, pos: Point2<f64>) -> f64 {
-        let cell_pos = Vector2::new(
-            pos[0] * f64::from(self.width()),
-            pos[1] * f64::from(self.height()),
-        );
+        let cell_pos = Vector2::new(pos[0] * self.width(), pos[1] * self.height());
         let rel_x = cell_pos.x - f64::floor(cell_pos.x);
         let rel_y = cell_pos.y - f64::floor(cell_pos.y);
         let rel_pos = Vector2::new(rel_x, rel_y);
@@ -271,8 +270,8 @@ where
         Lerp::lerp(p1, p2, interp_y) * f64::consts::SQRT_2
     }
 
-    fn dimensions(&self) -> (u32, u32) {
-        self.dimensions
+    fn frequency(&self) -> (f64, f64) {
+        self.frequency
     }
 }
 
@@ -280,12 +279,13 @@ impl<G> Perlin3d<G, DefaultInterpolator>
 where
     G: GradientProvider<Point3<u32>, DimType = (u32, u32, u32), Output = Vector3<f64>>,
 {
-    pub fn new(dimensions: (u32, u32, u32), gradients: G) -> Perlin3d<G, DefaultInterpolator> {
+    pub fn new(frequency: (f64, f64, f64), gradients: G) -> Perlin3d<G, DefaultInterpolator> {
         if let Some(dim) = gradients.dimensions() {
-            assert!(dimensions <= dim, "The gradient provider has a smaller maximum size than the requested noise frequency.");
+            assert!(frequency <= (dim.0 as f64, dim.1 as f64, dim.2 as f64),
+                "The gradient provider has a smaller maximum size than the requested noise frequency.");
         }
         Perlin3d {
-            dimensions,
+            frequency,
             gradients,
             interp: DefaultInterpolator::new(),
         }
@@ -297,7 +297,11 @@ impl Perlin3d<Grid3d<Vector3<f64>>, DefaultInterpolator> {
         grid: Grid3d<Vector3<f64>>,
     ) -> Perlin3d<Grid3d<Vector3<f64>>, DefaultInterpolator> {
         Perlin3d {
-            dimensions: (grid.width(), grid.height(), grid.depth()),
+            frequency: (
+                grid.width() as f64,
+                grid.height() as f64,
+                grid.depth() as f64,
+            ),
             gradients: grid,
             interp: DefaultInterpolator::new(),
         }
@@ -315,7 +319,7 @@ where
     {
         Perlin3d {
             interp: interpolator,
-            dimensions: self.dimensions,
+            frequency: self.frequency,
             gradients: self.gradients,
         }
     }
@@ -350,13 +354,13 @@ where
     P: InterpolationFunction,
 {
     type IndexType = Point3<f64>;
-    type DimType = (u32, u32, u32);
+    type DimType = (f64, f64, f64);
 
     fn value_at(&self, pos: Point3<f64>) -> f64 {
         let cell_pos = Vector3::new(
-            pos[0] * f64::from(self.width()),
-            pos[1] * f64::from(self.height()),
-            pos[2] * f64::from(self.depth()),
+            pos[0] * self.width(),
+            pos[1] * self.height(),
+            pos[2] * self.depth(),
         );
 
         let rel_x = cell_pos.x - cell_pos.x.floor();
@@ -415,8 +419,8 @@ where
         Lerp::lerp(front_p, back_p, interp_z) * f64::consts::SQRT_2
     }
 
-    fn dimensions(&self) -> (u32, u32, u32) {
-        self.dimensions
+    fn frequency(&self) -> (f64, f64, f64) {
+        self.frequency
     }
 }
 
