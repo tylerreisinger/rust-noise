@@ -3,8 +3,10 @@ use std::f64;
 use cgmath::Vector2;
 use cgmath::{InnerSpace, Vector3};
 
-use interpolate::{InterpolationFunction, Lerp};
+use interpolate::{self, InterpolationFunction, Lerp};
 use noise::{GradientProvider, Noise, Noise1d, Noise2d, Noise3d, Point1, Point2, Point3};
+
+pub type DefaultInterpolator = interpolate::Hermite5thOrderInterpolator;
 
 #[derive(Clone, Debug)]
 pub struct Perlin1d<G, P>
@@ -37,16 +39,35 @@ where
     interp: P,
 }
 
+impl<G> Perlin1d<G, DefaultInterpolator>
+where
+    G: GradientProvider<Point1<u32>, DimType = (u32,)>,
+{
+    pub fn new(size: u32, gradients: G) -> Perlin1d<G, DefaultInterpolator> {
+        if let Some(dim) = gradients.dimensions() {
+            assert!((size,) <= dim, "The gradient provider has a smaller maximum size than the requested noise frequency.");
+        }
+        Perlin1d {
+            size,
+            gradients,
+            interp: DefaultInterpolator::new(),
+        }
+    }
+}
+
 impl<G, P> Perlin1d<G, P>
 where
     G: GradientProvider<Point1<u32>, DimType = (u32,)>,
     P: InterpolationFunction,
 {
-    pub fn new(size: u32, gradients: G, interp: P) -> Perlin1d<G, P> {
+    pub fn with_interpolator<P2>(self, interpolator: P2) -> Perlin1d<G, P2>
+    where
+        P2: InterpolationFunction,
+    {
         Perlin1d {
-            size,
-            gradients,
-            interp,
+            interp: interpolator,
+            size: self.size,
+            gradients: self.gradients,
         }
     }
 
@@ -84,10 +105,10 @@ where
 
     fn value_at(&self, pos: f64) -> f64 {
         let cell_pos = pos * f64::from(self.width());
+        let rel_pos = cell_pos - cell_pos.floor();
+
         let x_0 = cell_pos as u32;
         let x_1 = x_0 + 1;
-
-        let rel_pos = cell_pos - cell_pos.floor();
 
         let gradients = [
             *self.gradients.get_gradient(x_0),
@@ -116,21 +137,38 @@ where
     }
 }
 
-impl<G, P> Perlin2d<G, P>
+impl<G> Perlin2d<G, DefaultInterpolator>
 where
     G: GradientProvider<Point2<u32>, DimType = (u32, u32)>,
-    P: InterpolationFunction,
 {
-    pub fn new(dimensions: (u32, u32), gradients: G, interp: P) -> Perlin2d<G, P> {
+    pub fn new(dimensions: (u32, u32), gradients: G) -> Perlin2d<G, DefaultInterpolator> {
         if let Some(dim) = gradients.dimensions() {
             assert!(dimensions <= dim, "The gradient provider has a smaller maximum size than the requested noise frequency.");
         }
         Perlin2d {
             dimensions,
             gradients,
-            interp,
+            interp: DefaultInterpolator::new(),
         }
     }
+}
+
+impl<G, P> Perlin2d<G, P>
+where
+    G: GradientProvider<Point2<u32>, DimType = (u32, u32)>,
+    P: InterpolationFunction,
+{
+    pub fn with_interpolator<P2>(self, interpolator: P2) -> Perlin2d<G, P2>
+    where
+        P2: InterpolationFunction,
+    {
+        Perlin2d {
+            interp: interpolator,
+            dimensions: self.dimensions,
+            gradients: self.gradients,
+        }
+    }
+
     /*pub fn build_geometric_octaves<G>(
         initial_frequency: <Self as Noise>::DimType,
         num_octaves: u32,
@@ -215,16 +253,35 @@ where
     }
 }
 
+impl<G> Perlin3d<G, DefaultInterpolator>
+where
+    G: GradientProvider<Point3<u32>, DimType = (u32, u32, u32), Output = Vector3<f64>>,
+{
+    pub fn new(dimensions: (u32, u32, u32), gradients: G) -> Perlin3d<G, DefaultInterpolator> {
+        if let Some(dim) = gradients.dimensions() {
+            assert!(dimensions <= dim, "The gradient provider has a smaller maximum size than the requested noise frequency.");
+        }
+        Perlin3d {
+            dimensions,
+            gradients,
+            interp: DefaultInterpolator::new(),
+        }
+    }
+}
+
 impl<G, P> Perlin3d<G, P>
 where
     G: GradientProvider<Point3<u32>, Output = Vector3<f64>>,
     P: InterpolationFunction,
 {
-    pub fn new(dimensions: (u32, u32, u32), gradients: G, interp: P) -> Perlin3d<G, P> {
+    pub fn with_interpolator<P2>(self, interpolator: P2) -> Perlin3d<G, P2>
+    where
+        P2: InterpolationFunction,
+    {
         Perlin3d {
-            dimensions,
-            gradients,
-            interp: interp,
+            interp: interpolator,
+            dimensions: self.dimensions,
+            gradients: self.gradients,
         }
     }
 
@@ -267,17 +324,17 @@ where
             pos[2] * f64::from(self.depth()),
         );
 
+        let rel_x = cell_pos.x - cell_pos.x.floor();
+        let rel_y = cell_pos.y - cell_pos.y.floor();
+        let rel_z = cell_pos.z - cell_pos.z.floor();
+        let rel_pos = Vector3::new(rel_x, rel_y, rel_z);
+
         let x_0 = cell_pos.x as u32;
         let x_1 = x_0 + 1;
         let y_0 = cell_pos.y as u32;
         let y_1 = y_0 + 1;
         let z_0 = cell_pos.z as u32;
         let z_1 = z_0 + 1;
-
-        let rel_x = cell_pos.x - cell_pos.x.floor();
-        let rel_y = cell_pos.y - cell_pos.y.floor();
-        let rel_z = cell_pos.z - cell_pos.z.floor();
-        let rel_pos = Vector3::new(rel_x, rel_y, rel_z);
 
         let gradients = [
             *self.gradients.get_gradient([x_0, y_0, z_0]),
@@ -333,19 +390,17 @@ mod tests {
     use std::f64;
 
     use rand;
-    use test::Bencher;
+    use test;
     use super::Perlin2d;
     use grid::{self, GradientGrid};
     use interpolate;
     use noise::{gradient, Noise};
 
     #[bench]
-    fn bench_perlin_2d_grid(b: &mut Bencher) {
+    fn bench_perlin_2d_grid(b: &mut test::Bencher) {
         let (width, height) = (1000u32, 1000);
         let dx = 1.0 / f64::from(width);
         let dy = 1.0 / f64::from(height);
-
-        let mut raw_values = vec![0.0; (width * height) as usize];
 
         let perlin = Perlin2d::new(
             (10, 10),
@@ -353,12 +408,10 @@ mod tests {
                 (11, 11),
                 &mut gradient::RandomGradientBuilder2d::new(rand::thread_rng()),
             ),
-            gradient::provider::cube_gradient_table_2d(&mut rand::thread_rng()),
+            //gradient::provider::cube_gradient_table_2d(&mut rand::thread_rng()),
             interpolate::Hermite5thOrderInterpolator::new(),
         );
 
-        b.iter(|| {
-            perlin.value_at([0.333, 0.754]);
-        });
+        b.iter(|| perlin.value_at([0.333, 0.754]));
     }
 }
