@@ -1,3 +1,7 @@
+
+#![feature(test)]
+extern crate test;
+
 extern crate cgmath;
 extern crate image;
 extern crate rand;

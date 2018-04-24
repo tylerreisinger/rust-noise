@@ -100,7 +100,7 @@ where
     type Output = T;
     type DimType = (u32, u32);
 
-    fn get_gradient(&self, index: &Point2<u32>) -> &Self::Output {
+    fn get_gradient(&self, index: Point2<u32>) -> &Self::Output {
         &self.data[(index[0] + index[1] * self.width()) as usize]
     }
     fn dimensions(&self) -> Option<Self::DimType> {
@@ -248,7 +248,7 @@ where
 {
     type Output = T;
     type DimType = (u32, u32, u32);
-    fn get_gradient(&self, index: &Point3<u32>) -> &Self::Output {
+    fn get_gradient(&self, index: Point3<u32>) -> &Self::Output {
         &self[(index[0] as usize, index[1] as usize, index[2] as usize)]
     }
     fn dimensions(&self) -> Option<Self::DimType> {

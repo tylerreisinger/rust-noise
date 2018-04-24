@@ -18,7 +18,7 @@ pub trait GradientBuilder {
 pub trait GradientProvider<I> {
     type Output: Clone;
     type DimType;
-    fn get_gradient(&self, index: &I) -> &Self::Output;
+    fn get_gradient(&self, index: I) -> &Self::Output;
 
     fn dimensions(&self) -> Option<Self::DimType> {
         None
@@ -31,8 +31,8 @@ where
 {
     type Output = T;
     type DimType = (u32,);
-    fn get_gradient(&self, index: &Point1<u32>) -> &Self::Output {
-        &self[*index as usize]
+    fn get_gradient(&self, index: Point1<u32>) -> &Self::Output {
+        &self[index as usize]
     }
 
     fn dimensions(&self) -> Option<Self::DimType> {

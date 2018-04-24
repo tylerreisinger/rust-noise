@@ -36,7 +36,7 @@ impl LinearInterpolator {
 impl Lerp for f64 {
     #[inline]
     fn lerp(x1: f64, x2: f64, pos: f64) -> f64 {
-        (1.0 - pos) * x1 + x2 * pos
+        x1 + (x2 - x1) * pos
     }
 }
 

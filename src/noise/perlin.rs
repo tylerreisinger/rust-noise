@@ -90,8 +90,8 @@ where
         let rel_pos = cell_pos - cell_pos.floor();
 
         let gradients = [
-            *self.gradients.get_gradient(&x_0),
-            *self.gradients.get_gradient(&x_1),
+            *self.gradients.get_gradient(x_0),
+            *self.gradients.get_gradient(x_1),
         ];
         let rel_points = [0.0, 1.0];
 
@@ -168,20 +168,20 @@ where
             pos[0] * f64::from(self.width()),
             pos[1] * f64::from(self.height()),
         );
+        let rel_x = cell_pos.x - f64::floor(cell_pos.x);
+        let rel_y = cell_pos.y - f64::floor(cell_pos.y);
+        let rel_pos = Vector2::new(rel_x, rel_y);
+
         let x_0 = cell_pos.x as u32;
         let x_1 = x_0 + 1;
         let y_0 = cell_pos.y as u32;
         let y_1 = y_0 + 1;
 
-        let rel_x = cell_pos.x - cell_pos.x.floor();
-        let rel_y = cell_pos.y - cell_pos.y.floor();
-        let rel_pos = Vector2::new(rel_x, rel_y);
-
         let gradients = [
-            *self.gradients.get_gradient(&[x_0, y_0]),
-            *self.gradients.get_gradient(&[x_1, y_0]),
-            *self.gradients.get_gradient(&[x_0, y_1]),
-            *self.gradients.get_gradient(&[x_1, y_1]),
+            *self.gradients.get_gradient([x_0, y_0]),
+            *self.gradients.get_gradient([x_1, y_0]),
+            *self.gradients.get_gradient([x_0, y_1]),
+            *self.gradients.get_gradient([x_1, y_1]),
         ];
         let rel_points = [
             Vector2::new(0.0, 0.0),
@@ -280,14 +280,14 @@ where
         let rel_pos = Vector3::new(rel_x, rel_y, rel_z);
 
         let gradients = [
-            *self.gradients.get_gradient(&[x_0, y_0, z_0]),
-            *self.gradients.get_gradient(&[x_1, y_0, z_0]),
-            *self.gradients.get_gradient(&[x_0, y_1, z_0]),
-            *self.gradients.get_gradient(&[x_1, y_1, z_0]),
-            *self.gradients.get_gradient(&[x_0, y_0, z_1]),
-            *self.gradients.get_gradient(&[x_1, y_0, z_1]),
-            *self.gradients.get_gradient(&[x_0, y_1, z_1]),
-            *self.gradients.get_gradient(&[x_1, y_1, z_1]),
+            *self.gradients.get_gradient([x_0, y_0, z_0]),
+            *self.gradients.get_gradient([x_1, y_0, z_0]),
+            *self.gradients.get_gradient([x_0, y_1, z_0]),
+            *self.gradients.get_gradient([x_1, y_1, z_0]),
+            *self.gradients.get_gradient([x_0, y_0, z_1]),
+            *self.gradients.get_gradient([x_1, y_0, z_1]),
+            *self.gradients.get_gradient([x_0, y_1, z_1]),
+            *self.gradients.get_gradient([x_1, y_1, z_1]),
         ];
         let rel_points = [
             Vector3::new(0.0, 0.0, 0.0),
@@ -325,5 +325,40 @@ where
 
     fn dimensions(&self) -> (u32, u32, u32) {
         self.dimensions
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::f64;
+
+    use rand;
+    use test::Bencher;
+    use super::Perlin2d;
+    use grid::{self, GradientGrid};
+    use interpolate;
+    use noise::{gradient, Noise};
+
+    #[bench]
+    fn bench_perlin_2d_grid(b: &mut Bencher) {
+        let (width, height) = (1000u32, 1000);
+        let dx = 1.0 / f64::from(width);
+        let dy = 1.0 / f64::from(height);
+
+        let mut raw_values = vec![0.0; (width * height) as usize];
+
+        let perlin = Perlin2d::new(
+            (10, 10),
+            grid::Grid2d::build_grid(
+                (11, 11),
+                &mut gradient::RandomGradientBuilder2d::new(rand::thread_rng()),
+            ),
+            gradient::provider::cube_gradient_table_2d(&mut rand::thread_rng()),
+            interpolate::Hermite5thOrderInterpolator::new(),
+        );
+
+        b.iter(|| {
+            perlin.value_at([0.333, 0.754]);
+        });
     }
 }
