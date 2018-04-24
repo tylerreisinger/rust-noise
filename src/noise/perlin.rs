@@ -3,6 +3,7 @@ use std::f64;
 use cgmath::Vector2;
 use cgmath::{InnerSpace, Vector3};
 
+use grid::{Grid1d, Grid2d, Grid3d};
 use interpolate::{self, InterpolationFunction, Lerp};
 use noise::{GradientProvider, Noise, Noise1d, Noise2d, Noise3d, Point1, Point2, Point3};
 
@@ -50,6 +51,16 @@ where
         Perlin1d {
             size,
             gradients,
+            interp: DefaultInterpolator::new(),
+        }
+    }
+}
+
+impl Perlin1d<Grid1d<f64>, DefaultInterpolator> {
+    pub fn from_grid(grid: Grid1d<f64>) -> Perlin1d<Grid1d<f64>, DefaultInterpolator> {
+        Perlin1d {
+            size: grid.len() as u32,
+            gradients: grid,
             interp: DefaultInterpolator::new(),
         }
     }
@@ -148,6 +159,18 @@ where
         Perlin2d {
             dimensions,
             gradients,
+            interp: DefaultInterpolator::new(),
+        }
+    }
+}
+
+impl Perlin2d<Grid2d<Vector2<f64>>, DefaultInterpolator> {
+    pub fn from_grid(
+        grid: Grid2d<Vector2<f64>>,
+    ) -> Perlin2d<Grid2d<Vector2<f64>>, DefaultInterpolator> {
+        Perlin2d {
+            dimensions: (grid.width(), grid.height()),
+            gradients: grid,
             interp: DefaultInterpolator::new(),
         }
     }
@@ -264,6 +287,18 @@ where
         Perlin3d {
             dimensions,
             gradients,
+            interp: DefaultInterpolator::new(),
+        }
+    }
+}
+
+impl Perlin3d<Grid3d<Vector3<f64>>, DefaultInterpolator> {
+    pub fn from_grid(
+        grid: Grid3d<Vector3<f64>>,
+    ) -> Perlin3d<Grid3d<Vector3<f64>>, DefaultInterpolator> {
+        Perlin3d {
+            dimensions: (grid.width(), grid.height(), grid.depth()),
+            gradients: grid,
             interp: DefaultInterpolator::new(),
         }
     }

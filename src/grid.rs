@@ -11,6 +11,8 @@ pub trait GradientGrid {
         G: GradientBuilder<Output = Self::Gradient>;
 }
 
+pub type Grid1d<T> = Vec<T>;
+
 #[derive(Clone, Debug)]
 pub struct Grid2d<T> {
     data: Vec<T>,
