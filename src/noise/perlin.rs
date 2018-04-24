@@ -5,7 +5,8 @@ use cgmath::{InnerSpace, Vector3};
 
 use grid::{Grid1d, Grid2d, Grid3d};
 use interpolate::{self, InterpolationFunction, Lerp};
-use noise::{GradientProvider, Noise, Noise1d, Noise2d, Noise3d, Point1, Point2, Point3};
+use noise::{Noise, Noise1d, Noise2d, Noise3d, Point1, Point2, Point3};
+use gradient::GradientProvider;
 
 pub type DefaultInterpolator = interpolate::Hermite5thOrderInterpolator;
 

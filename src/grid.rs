@@ -1,5 +1,5 @@
 use std::ops::{Index, IndexMut};
-use noise::gradient::{GradientBuilder, GradientProvider};
+use gradient::{GradientBuilder, GradientProvider};
 use noise::{Point2, Point3};
 
 pub trait GradientGrid {

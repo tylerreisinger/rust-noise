@@ -1,11 +1,7 @@
-pub mod gradient;
 pub mod perlin;
 pub mod point;
 pub mod octave;
 
-pub use noise::gradient::{CubeGradientBuilder1d, CubeGradientBuilder2d, GradientBuilder,
-                          GradientProvider, RandomGradientBuilder1d, RandomGradientBuilder2d,
-                          RandomGradientBuilder3d};
 pub use noise::perlin::{Perlin1d, Perlin2d, Perlin3d};
 pub use noise::octave::{Octave, OctaveNoise};
 pub use noise::point::{Point1, Point2, Point3, Point4, PointUtil};
