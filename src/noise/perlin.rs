@@ -409,7 +409,6 @@ mod tests {
                 &mut gradient::RandomGradientBuilder2d::new(rand::thread_rng()),
             ),
             //gradient::provider::cube_gradient_table_2d(&mut rand::thread_rng()),
-            interpolate::Hermite5thOrderInterpolator::new(),
         );
 
         b.iter(|| perlin.value_at([0.333, 0.754]));
