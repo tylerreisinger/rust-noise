@@ -110,13 +110,13 @@ where
 pub fn build_geometric_fractal_noise<N, F>(
     initial_frequency: N::DimType,
     num_octaves: u32,
-    octave_scaling: N::DimType,
+    frequency_scaling: N::DimType,
     persistance: f64,
     noise_builder: &mut F,
 ) -> OctaveNoise<N>
 where
     N: Noise,
-    N::DimType: TupleUtil<u32> + Clone + fmt::Debug,
+    N::DimType: TupleUtil<f64> + Clone + fmt::Debug,
     F: FnMut(u32, N::DimType, f64) -> N,
 {
     let mut octaves = Vec::with_capacity(num_octaves as usize);
@@ -125,7 +125,7 @@ where
             .map(|x| 1.0 / (persistance.powi(x as i32 + 1)))
             .sum::<f64>();
 
-    let scaling = octave_scaling;
+    let scaling = frequency_scaling;
     let mut frequency = initial_frequency;
     for i in 0..num_octaves {
         let amplitude = (1.0 / persistance.powi(i as i32 + 1)) * amplitude_multiplier;

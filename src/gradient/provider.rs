@@ -110,13 +110,14 @@ where
 {
     //This must always be a power of 2.
     const DEFAULT_PERMUTATION_SIZE: u32 = 256;
-    pub fn new<B, R>(rng: &mut R, builder: &mut B, size: usize) -> PermutedGradientTable<G>
+    pub fn new<B, R>(rng: &mut R, builder: &mut B, size: u32) -> PermutedGradientTable<G>
     where
         B: GradientBuilder<Output = G>,
         R: Rng,
     {
-        let permutations = PermutationTable::new(rng, Self::DEFAULT_PERMUTATION_SIZE);
-        let table = GradientTable::new(builder, size);
+        let size = Self::adjust_size(size.max(Self::DEFAULT_PERMUTATION_SIZE));
+        let permutations = PermutationTable::new(rng, size);
+        let table = GradientTable::new(builder, size as usize);
 
         PermutedGradientTable {
             permutations,
@@ -176,9 +177,7 @@ where
 
     #[inline]
     fn wrap_val(&self, val: u32) -> u32 {
-        //val % (self.permutations.len() as u32)
         val & ((self.permutations.len() - 1) as u32)
-        //val
     }
 
     #[inline]

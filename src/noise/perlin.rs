@@ -5,8 +5,9 @@ use cgmath::{InnerSpace, Vector3};
 
 use grid::{Grid1d, Grid2d, Grid3d};
 use interpolate::{self, InterpolationFunction, Lerp};
-use noise::{Noise, Noise1d, Noise2d, Noise3d, Point1, Point2, Point3};
-use gradient::GradientProvider;
+use noise::{Noise, Noise1d, Noise2d, Noise3d, Point1, Point2, Point3, TupleUtil};
+use gradient::{GradientFactory, GradientProvider};
+use noise::octave::{build_geometric_fractal_noise, OctaveNoise};
 
 pub type DefaultInterpolator = interpolate::Hermite5thOrderInterpolator;
 
@@ -43,7 +44,7 @@ where
 
 impl<G> Perlin1d<G, DefaultInterpolator>
 where
-    G: GradientProvider<Point1<u32>, DimType = (u32,)>,
+    G: GradientProvider<Point1<u32>, DimType = (u32,), Output = f64>,
 {
     pub fn new(frequency: f64, gradients: G) -> Perlin1d<G, DefaultInterpolator> {
         if let Some(dim) = gradients.dimensions() {
@@ -55,6 +56,29 @@ where
             gradients,
             interp: DefaultInterpolator::new(),
         }
+    }
+
+    pub fn build_geometric_octaves<F>(
+        initial_frequency: <Self as Noise>::DimType,
+        num_octaves: u32,
+        frequency_scaling: <Self as Noise>::DimType,
+        persistance: f64,
+        gradient_factory: &mut F,
+    ) -> OctaveNoise<Perlin1d<G, DefaultInterpolator>>
+    where
+        <Self as Noise>::DimType: TupleUtil<f64>,
+        F: GradientFactory<f64, (f64,), Index = Point1<u32>, Output = G>,
+    {
+        build_geometric_fractal_noise(
+            initial_frequency,
+            num_octaves,
+            frequency_scaling,
+            persistance,
+            &mut move |n, frequency, _| {
+                let g = gradient_factory.build(n, frequency);
+                Perlin1d::new(frequency.0, g)
+            },
+        )
     }
 }
 
@@ -70,7 +94,7 @@ impl Perlin1d<Grid1d<f64>, DefaultInterpolator> {
 
 impl<G, P> Perlin1d<G, P>
 where
-    G: GradientProvider<Point1<u32>, DimType = (u32,)>,
+    G: GradientProvider<Point1<u32>, DimType = (u32,), Output = f64>,
     P: InterpolationFunction,
 {
     pub fn with_interpolator<P2>(self, interpolator: P2) -> Perlin1d<G, P2>
@@ -83,29 +107,6 @@ where
             gradients: self.gradients,
         }
     }
-
-    /*pub fn build_geometric_octaves<G>(
-        initial_frequency: u32,
-        num_octaves: u32,
-        octave_scaling: u32,
-        persistance: f64,
-        gradient_builder: &mut G,
-        interpolator: P,
-    ) -> OctaveNoise<Self>
-    where
-        G: GradientBuilder<Output = f64>,
-        Self: Noise<DimType = (u32,)>,
-    {
-        build_geometric_fractal_noise::<Self, _>(
-            (initial_frequency,),
-            num_octaves,
-            (octave_scaling,),
-            persistance,
-            &mut move |_, frequency, _| {
-                Perlin1d::new(frequency.0, gradient_builder, interpolator.clone())
-            },
-        )
-    }*/
 }
 
 impl<G, P> Noise for Perlin1d<G, P>
@@ -152,7 +153,7 @@ where
 
 impl<G> Perlin2d<G, DefaultInterpolator>
 where
-    G: GradientProvider<Point2<u32>, DimType = (u32, u32)>,
+    G: GradientProvider<Point2<u32>, DimType = (u32, u32), Output = Vector2<f64>>,
 {
     pub fn new(frequency: (f64, f64), gradients: G) -> Perlin2d<G, DefaultInterpolator> {
         if let Some(dim) = gradients.dimensions() {
@@ -164,6 +165,29 @@ where
             gradients,
             interp: DefaultInterpolator::new(),
         }
+    }
+
+    pub fn build_geometric_octaves<F>(
+        initial_frequency: <Self as Noise>::DimType,
+        num_octaves: u32,
+        frequency_scaling: <Self as Noise>::DimType,
+        persistance: f64,
+        gradient_factory: &mut F,
+    ) -> OctaveNoise<Perlin2d<G, DefaultInterpolator>>
+    where
+        <Self as Noise>::DimType: TupleUtil<f64>,
+        F: GradientFactory<Vector2<f64>, (f64, f64), Index = Point2<u32>, Output = G>,
+    {
+        build_geometric_fractal_noise(
+            initial_frequency,
+            num_octaves,
+            frequency_scaling,
+            persistance,
+            &mut move |n, frequency, _| {
+                let g = gradient_factory.build(n, frequency);
+                Perlin2d::new(frequency, g)
+            },
+        )
     }
 }
 
@@ -181,7 +205,7 @@ impl Perlin2d<Grid2d<Vector2<f64>>, DefaultInterpolator> {
 
 impl<G, P> Perlin2d<G, P>
 where
-    G: GradientProvider<Point2<u32>, DimType = (u32, u32)>,
+    G: GradientProvider<Point2<u32>, DimType = (u32, u32), Output = Vector2<f64>>,
     P: InterpolationFunction,
 {
     pub fn with_interpolator<P2>(self, interpolator: P2) -> Perlin2d<G, P2>
@@ -194,29 +218,6 @@ where
             gradients: self.gradients,
         }
     }
-
-    /*pub fn build_geometric_octaves<G>(
-        initial_frequency: <Self as Noise>::DimType,
-        num_octaves: u32,
-        octave_scaling: <Self as Noise>::DimType,
-        persistance: f64,
-        gradient_builder: &mut G,
-        interpolator: P,
-    ) -> OctaveNoise<Self>
-    where
-        G: GradientBuilder<Output = Vector2<f64>>,
-        <Self as Noise>::DimType: TupleUtil<u32>,
-    {
-        build_geometric_fractal_noise(
-            initial_frequency,
-            num_octaves,
-            octave_scaling,
-            persistance,
-            &mut move |_, frequency, _| {
-                Perlin2d::new(frequency, gradient_builder, interpolator.clone())
-            },
-        )
-    }*/
 }
 
 impl<G, P> Noise for Perlin2d<G, P>
@@ -291,6 +292,29 @@ where
             interp: DefaultInterpolator::new(),
         }
     }
+
+    pub fn build_geometric_octaves<F>(
+        initial_frequency: <Self as Noise>::DimType,
+        num_octaves: u32,
+        frequency_scaling: <Self as Noise>::DimType,
+        persistance: f64,
+        gradient_factory: &mut F,
+    ) -> OctaveNoise<Perlin3d<G, DefaultInterpolator>>
+    where
+        <Self as Noise>::DimType: TupleUtil<f64>,
+        F: GradientFactory<Vector3<f64>, (f64, f64, f64), Index = Point3<u32>, Output = G>,
+    {
+        build_geometric_fractal_noise(
+            initial_frequency,
+            num_octaves,
+            frequency_scaling,
+            persistance,
+            &mut move |n, frequency, _| {
+                let g = gradient_factory.build(n, frequency);
+                Perlin3d::new(frequency, g)
+            },
+        )
+    }
 }
 
 impl Perlin3d<Grid3d<Vector3<f64>>, DefaultInterpolator> {
@@ -311,7 +335,7 @@ impl Perlin3d<Grid3d<Vector3<f64>>, DefaultInterpolator> {
 
 impl<G, P> Perlin3d<G, P>
 where
-    G: GradientProvider<Point3<u32>, Output = Vector3<f64>>,
+    G: GradientProvider<Point3<u32>, DimType = (u32, u32, u32), Output = Vector3<f64>>,
     P: InterpolationFunction,
 {
     pub fn with_interpolator<P2>(self, interpolator: P2) -> Perlin3d<G, P2>
@@ -324,29 +348,6 @@ where
             gradients: self.gradients,
         }
     }
-
-    /*pub fn build_geometric_octaves<G>(
-        initial_frequency: <Self as Noise>::DimType,
-        num_octaves: u32,
-        octave_scaling: <Self as Noise>::DimType,
-        persistance: f64,
-        gradient_builder: &mut G,
-        interpolator: P,
-    ) -> OctaveNoise<Self>
-    where
-        G: GradientBuilder<Output = Vector3<f64>>,
-        <Self as Noise>::DimType: TupleUtil<u32>,
-    {
-        build_geometric_fractal_noise(
-            initial_frequency,
-            num_octaves,
-            octave_scaling,
-            persistance,
-            &mut move |_, frequency, _| {
-                Perlin3d::new(frequency, gradient_builder, interpolator.clone())
-            },
-        )
-    }*/
 }
 
 impl<G, P> Noise for Perlin3d<G, P>
