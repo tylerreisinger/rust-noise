@@ -19,7 +19,7 @@ pub struct PermutedGradientTable<G> {
 
 const FRAC_SQRT_2: f64 = f64::consts::FRAC_1_SQRT_2;
 
-pub fn cube_gradient_table_2d<R>(rng: &mut R) -> PermutedGradientTable<Vector2<f64>>
+pub fn cube_gradient_table_2d<R>(rng: R) -> PermutedGradientTable<Vector2<f64>>
 where
     R: Rng,
 {
@@ -110,7 +110,7 @@ where
 {
     //This must always be a power of 2.
     const DEFAULT_PERMUTATION_SIZE: u32 = 256;
-    pub fn new<B, R>(rng: &mut R, builder: &mut B, size: u32) -> PermutedGradientTable<G>
+    pub fn new<B, R>(rng: R, builder: &mut B, size: u32) -> PermutedGradientTable<G>
     where
         B: GradientBuilder<Output = G>,
         R: Rng,
@@ -125,7 +125,7 @@ where
         }
     }
 
-    pub fn from_values<R>(rng: &mut R, values: Vec<G>) -> PermutedGradientTable<G>
+    pub fn from_values<R>(rng: R, values: Vec<G>) -> PermutedGradientTable<G>
     where
         R: Rng,
     {

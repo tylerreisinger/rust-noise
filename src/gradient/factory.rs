@@ -13,7 +13,7 @@ where
     R: Rng + 'a,
 {
     builder: &'a mut B,
-    rng: &'a mut R,
+    rng: R,
 }
 
 #[derive(Debug)]
@@ -23,7 +23,7 @@ where
     R: Rng + 'a,
 {
     builder: &'a mut B,
-    rng: &'a mut R,
+    rng: R,
     grid_scaling: f64,
     grid_size: u32,
 }
@@ -39,14 +39,14 @@ where
 impl<'a, B, R> GridGradientFactory<'a, B, R>
 where
     B: GradientBuilder + 'a,
-    R: Rng + 'a,
+    R: Rng,
 {
-    pub fn new(builder: &'a mut B, rng: &'a mut R) -> GridGradientFactory<'a, B, R> {
+    pub fn new(builder: &'a mut B, rng: R) -> GridGradientFactory<'a, B, R> {
         GridGradientFactory { builder, rng }
     }
 
     pub fn rng(&mut self) -> &mut R {
-        self.rng
+        &mut self.rng
     }
 }
 
@@ -104,7 +104,7 @@ where
 {
     pub fn new(
         builder: &'a mut B,
-        rng: &'a mut R,
+        rng: R,
         grid_size: u32,
         grid_scaling: f64,
     ) -> RandomPermutationGradientFactory<'a, B, R> {
@@ -117,7 +117,7 @@ where
     }
 
     pub fn rng(&mut self) -> &mut R {
-        self.rng
+        &mut self.rng
     }
 
     pub fn grid_size(&self) -> u32 {
@@ -138,7 +138,7 @@ where
 
     fn build(&mut self, octave: u32, _: (f64,)) -> PermutedGradientTable<f64> {
         PermutedGradientTable::new(
-            self.rng,
+            &mut self.rng,
             self.builder,
             self.grid_size * (self.grid_scaling.powi(octave as i32) as u32),
         )
@@ -156,7 +156,7 @@ where
 
     fn build(&mut self, octave: u32, _: (f64, f64)) -> PermutedGradientTable<Vector2<f64>> {
         PermutedGradientTable::new(
-            self.rng,
+            &mut self.rng,
             self.builder,
             self.grid_size * (self.grid_scaling.powi(octave as i32) as u32),
         )
@@ -174,7 +174,7 @@ where
 
     fn build(&mut self, octave: u32, _: (f64, f64, f64)) -> PermutedGradientTable<Vector3<f64>> {
         PermutedGradientTable::new(
-            self.rng,
+            &mut self.rng,
             self.builder,
             self.grid_size * (self.grid_scaling.powi(octave as i32) as u32),
         )

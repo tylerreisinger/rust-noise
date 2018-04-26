@@ -1,24 +1,6 @@
-use std::u8;
 use std::ops::Index;
 
 use rand::Rng;
-use cgmath::Vector2;
-
-const INV_SQRT_2: f64 = 0.7071067811865475244008443621048490392848359376884740;
-
-pub fn get_2d_gradient(hash: u8) -> Vector2<f64> {
-    match hash % 12 {
-        0 | 4 => Vector2::new(1.0, 0.0),
-        1 | 5 => Vector2::new(0.0, 1.0),
-        2 | 6 => Vector2::new(-1.0, 0.0),
-        3 | 7 => Vector2::new(0.0, -1.0),
-        8 => Vector2::new(INV_SQRT_2, INV_SQRT_2),
-        9 => Vector2::new(-INV_SQRT_2, INV_SQRT_2),
-        10 => Vector2::new(-INV_SQRT_2, -INV_SQRT_2),
-        11 => Vector2::new(INV_SQRT_2, -INV_SQRT_2),
-        _ => unreachable!(),
-    }
-}
 
 #[derive(Clone, Debug)]
 pub struct PermutationTable {
@@ -26,7 +8,7 @@ pub struct PermutationTable {
 }
 
 impl PermutationTable {
-    pub fn new<R>(rng: &mut R, size: u32) -> PermutationTable
+    pub fn new<R>(mut rng: R, size: u32) -> PermutationTable
     where
         R: Rng,
     {
