@@ -8,7 +8,7 @@ pub struct PermutationTable {
 }
 
 impl PermutationTable {
-    pub fn new<R>(mut rng: R, size: u32) -> PermutationTable
+    pub fn new<R>(rng: &mut R, size: u32) -> PermutationTable
     where
         R: Rng,
     {

@@ -1,6 +1,6 @@
 use std::fmt;
 
-use noise::{Noise, TupleUtil};
+use noise::{Noise, TupleUtil, WithFrequency};
 
 #[derive(Clone, Debug)]
 pub struct Octave<T: Noise> {
@@ -27,6 +27,25 @@ where
     pub fn amplitude(&self) -> f64 {
         self.amplitude
     }
+
+    pub fn inner_noise(&self) -> &T {
+        &self.noise
+    }
+    pub fn inner_noise_mut(&mut self) -> &mut T {
+        &mut self.noise
+    }
+}
+
+impl<T> WithFrequency for Octave<T>
+where
+    T: Noise + WithFrequency,
+{
+    fn with_frequency(self, frequency: Self::DimType) -> Self {
+        Self {
+            noise: self.noise.with_frequency(frequency),
+            ..self
+        }
+    }
 }
 
 impl<T> OctaveNoise<T>
@@ -41,6 +60,10 @@ where
 
     pub fn from_octaves(octaves: Vec<Octave<T>>) -> OctaveNoise<T> {
         OctaveNoise { octaves }
+    }
+
+    pub fn num_octaves(&self) -> usize {
+        self.octaves.len()
     }
 }
 
@@ -57,6 +80,21 @@ where
 
     fn frequency(&self) -> T::DimType {
         self.noise.frequency()
+    }
+}
+
+impl<T> WithFrequency for OctaveNoise<T>
+where
+    T: Noise + WithFrequency,
+    T::DimType: Default + Clone,
+{
+    fn with_frequency(self, frequency: Self::DimType) -> Self {
+        Self {
+            octaves: self.octaves
+                .into_iter()
+                .map(|x| x.with_frequency(frequency.clone()))
+                .collect(),
+        }
     }
 }
 
@@ -129,11 +167,11 @@ where
     let mut frequency = initial_frequency;
     for i in 0..num_octaves {
         let amplitude = (1.0 / persistance.powi(i as i32 + 1)) * amplitude_multiplier;
-        frequency = frequency.apply(scaling.clone(), |f, s| f * s);
         let octave = Octave::new(
             noise_builder(i as u32, frequency.clone(), amplitude),
             amplitude,
         );
+        frequency = frequency.apply(scaling.clone(), |f, s| f * s);
         octaves.push(octave);
     }
 
