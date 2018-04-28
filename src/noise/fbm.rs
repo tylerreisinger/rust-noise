@@ -1,5 +1,5 @@
 use noise::{Noise, OctaveNoise, Perlin1d, Perlin2d, Perlin3d, Point1, Point2, Point3, ToTuple,
-            WithFrequency};
+            TupleUtil, WithFrequency};
 use noise::octave::build_geometric_fractal_noise;
 use interpolate::{self, InterpolationFunction};
 use gradient::{PermutedGradientTable, RandomGradientBuilder1d, RandomGradientBuilder2d,
@@ -46,7 +46,8 @@ macro_rules! impl_fbm {
             fn with_frequency(self, frequency: $dim) -> Self {
                 $name {
                     frequency: frequency.unwrap(),
-                    noise_octaves: self.noise_octaves.with_frequency(frequency.clone()),
+                    noise_octaves: self.noise_octaves.with_geometric_frequencies(
+                        frequency.clone(), self.frequency_scaling.clone().to_tuple()),
                     ..self
                 }
             }
@@ -63,6 +64,8 @@ macro_rules! impl_fbm {
             pub fn with_frequency_scaling(self, frequency_scaling: $freq) -> Self {
                 $name {
                     frequency_scaling,
+                    noise_octaves: self.noise_octaves.with_geometric_frequencies(
+                        self.frequency.clone().to_tuple(), self.frequency_scaling.clone().to_tuple()),
                     ..self
                 }
             }
@@ -88,6 +91,9 @@ macro_rules! impl_fbm {
             }
             pub fn num_octaves(&self) -> usize {
                 self.noise_octaves.num_octaves()
+            }
+            pub fn octaves(&self) -> &OctaveNoise<$noise<PermutedGradientTable<$vector>, P>> {
+                &self.noise_octaves
             }
 
             fn make_default_gradient_provider<R: Rng + Clone>(rng: &mut R, size: u32) -> PermutedGradientTable<$vector> {

@@ -65,6 +65,49 @@ where
     pub fn num_octaves(&self) -> usize {
         self.octaves.len()
     }
+
+    pub fn octaves(&self) -> &Vec<Octave<T>> {
+        &self.octaves
+    }
+    pub fn octaves_mut(&mut self) -> &mut Vec<Octave<T>> {
+        &mut self.octaves
+    }
+}
+impl<T> OctaveNoise<T>
+where
+    T: Noise + WithFrequency,
+    T::DimType: Clone + TupleUtil<f64>,
+{
+    pub fn with_frequencies(self, frequencies: &[T::DimType]) -> Self {
+        assert!(frequencies.len() == self.octaves.len());
+
+        let octaves = self.octaves
+            .into_iter()
+            .zip(frequencies.iter())
+            .map(|(x, f)| x.with_frequency((*f).clone()))
+            .collect();
+
+        OctaveNoise { octaves: octaves }
+    }
+
+    pub fn with_geometric_frequencies(
+        self,
+        start_frequency: T::DimType,
+        frequency_scaling: T::DimType,
+    ) -> Self {
+        let new_frequencies = (0..self.num_octaves()).map(|i| {
+            frequency_scaling
+                .clone()
+                .apply(start_frequency.clone(), |x, y| y * x.powi(i as i32))
+        });
+        let octaves = self.octaves
+            .into_iter()
+            .zip(new_frequencies)
+            .map(|(x, f)| x.with_frequency(f.clone()))
+            .collect();
+
+        OctaveNoise { octaves }
+    }
 }
 
 impl<T> Noise for Octave<T>
@@ -80,21 +123,6 @@ where
 
     fn frequency(&self) -> T::DimType {
         self.noise.frequency()
-    }
-}
-
-impl<T> WithFrequency for OctaveNoise<T>
-where
-    T: Noise + WithFrequency,
-    T::DimType: Default + Clone,
-{
-    fn with_frequency(self, frequency: Self::DimType) -> Self {
-        Self {
-            octaves: self.octaves
-                .into_iter()
-                .map(|x| x.with_frequency(frequency.clone()))
-                .collect(),
-        }
     }
 }
 
