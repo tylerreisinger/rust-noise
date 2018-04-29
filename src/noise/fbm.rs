@@ -23,9 +23,24 @@ macro_rules! impl_fbm {
             frequency_scaling: $freq,
             persistance: f64,
             interp: P,
-            noise_octaves: OctaveNoise<$noise<PermutedGradientTable<$vector>, P>>,
+            octaves: Vec<$noise>,
         }
 
+        impl $name<DefaultInterpolator> {
+            pub fn new<R>(rng: R)-> $name<DefaultInterpolator> {
+                $name {
+                    frequency: Self::DEFAULT_FREQUENCY,
+                    frequency_scaling: Self::DEFAULT_SCALING,
+                    persistance: Self::DEFAULT_PERSISTANCE,
+                    interp: DefaultInterpolator::default(),
+                    octaves: Vec::new(),
+                }
+            }
+        }
+    );
+}
+
+/*
         impl $name<DefaultInterpolator> {
             pub fn new<R: Rng + Clone>(rng: &mut R) -> $name<DefaultInterpolator> {
                 let mut fbm = $name {
@@ -137,6 +152,7 @@ macro_rules! impl_fbm {
         }
     )
 }
+*/
 
 impl_fbm!(
     Fbm1d,
