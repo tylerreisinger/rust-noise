@@ -1,6 +1,7 @@
-use noise::{Noise, OctaveNoise, Perlin1d, Perlin2d, Perlin3d, Point1, Point2, Point3, ToTuple,
-            TupleUtil, WithFrequency};
-use noise::octave::build_geometric_fractal_noise;
+use std::mem;
+
+use noise::{Noise, Perlin1d, Perlin2d, Perlin3d, Point1, Point2, Point3, ToTuple, TupleUtil,
+            WithFrequency};
 use interpolate::{self, InterpolationFunction};
 use gradient::{PermutedGradientTable, RandomGradientBuilder1d, RandomGradientBuilder2d,
                RandomGradientBuilder3d};
@@ -15,88 +16,87 @@ macro_rules! impl_fbm {
      $noise:ident, $vector:ty, $point:ty, $default_freq:expr, $default_scale:expr) => (
 
         #[derive(Clone, Debug)]
-        pub struct $name<P>
+        pub struct $name<P, R>
         where
             P: InterpolationFunction,
+            R: Rng + Clone
         {
             frequency: $freq,
             frequency_scaling: $freq,
             persistance: f64,
             interp: P,
-            octaves: Vec<$noise>,
+            octaves: Vec<$noise<PermutedGradientTable<$vector>, P>>,
+            rng: R,
         }
 
-        impl $name<DefaultInterpolator> {
-            pub fn new<R>(rng: R)-> $name<DefaultInterpolator> {
-                $name {
+        impl<R: Rng + Clone> $name<DefaultInterpolator, R> {
+            pub fn new(rng: R)-> $name<DefaultInterpolator, R> {
+                let mut fbm = $name {
                     frequency: Self::DEFAULT_FREQUENCY,
                     frequency_scaling: Self::DEFAULT_SCALING,
                     persistance: Self::DEFAULT_PERSISTANCE,
                     interp: DefaultInterpolator::default(),
                     octaves: Vec::new(),
-                }
-            }
-        }
-    );
-}
-
-/*
-        impl $name<DefaultInterpolator> {
-            pub fn new<R: Rng + Clone>(rng: &mut R) -> $name<DefaultInterpolator> {
-                let mut fbm = $name {
-                    frequency: Self::DEFAULT_FREQUENCY,
-                    frequency_scaling: Self::DEFAULT_SCALING,
-                    persistance: Self::DEFAULT_PERSISTANCE,
-                    interp: DefaultInterpolator::new(),
-                    noise_octaves: OctaveNoise::new(),
+                    rng: rng,
                 };
-                fbm.build_noise(rng, Self::DEFAULT_NUM_OCTAVES);
+                fbm.build_noise(Self::DEFAULT_NUM_OCTAVES);
                 fbm
             }
         }
 
-        impl<P> WithFrequency for $name<P>
+        impl<P, R> $name<P, R>
         where P: InterpolationFunction + Clone,
-        {
-            fn with_frequency(self, frequency: $dim) -> Self {
-                $name {
-                    frequency: frequency.unwrap(),
-                    noise_octaves: self.noise_octaves.with_geometric_frequencies(
-                        frequency.clone(), self.frequency_scaling.clone().to_tuple()),
-                    ..self
-                }
-            }
-        }
-
-        impl<P> $name<P>
-        where P: InterpolationFunction + Clone,
+              R: Rng + Clone,
         {
             pub const DEFAULT_FREQUENCY: $freq = $default_freq;
             pub const DEFAULT_NUM_OCTAVES: usize = 8;
             pub const DEFAULT_SCALING: $freq = $default_scale;
             pub const DEFAULT_PERSISTANCE: f64 = 2.0;
 
-            pub fn with_frequency_scaling(self, frequency_scaling: $freq) -> Self {
+            pub fn with_interpolator<P2>(self, interp: P2) -> $name<P2, R>
+                where P2: InterpolationFunction + Clone
+            {
                 $name {
-                    frequency_scaling,
-                    noise_octaves: self.noise_octaves.with_geometric_frequencies(
-                        self.frequency.clone().to_tuple(), self.frequency_scaling.clone().to_tuple()),
-                    ..self
+                    frequency: self.frequency,
+                    frequency_scaling: self.frequency_scaling,
+                    persistance: self.persistance,
+                    interp: interp.clone(),
+                    octaves: self.octaves.into_iter()
+                        .map(|x| x.with_interpolator(interp.clone())).collect(),
+                    rng: self.rng,
                 }
             }
+
+            pub fn with_frequency(self, frequency: $dim) -> Self {
+                let mut new = $name {
+                    frequency: frequency.unwrap(),
+                    ..self
+                };
+                new.set_new_noise_frequencies();
+                new
+            }
+            pub fn with_frequency_scaling(self, frequency_scaling: $dim) -> Self {
+                let mut new = $name {
+                    frequency_scaling: frequency_scaling.unwrap(),
+                    ..self
+                };
+                new.set_new_noise_frequencies();
+                new
+            }
+
+            pub fn with_num_octaves(self, num_octaves: usize) -> Self {
+                let mut new = $name {
+                    ..self
+                };
+                new.build_noise(num_octaves);
+                new
+            }
+
             pub fn with_persistance(self, persistance: f64) -> Self {
                 $name {
                     persistance,
                     ..self
                 }
-            }
-            pub fn with_num_octaves<R: Rng + Clone>(mut self, rng: &mut R, num_octaves: usize) -> Self {
-                self.build_noise(rng, num_octaves);
-                self
-            }
-
-            pub fn frequency(&self) -> $freq {
-                self.frequency
             }
             pub fn frequency_scaling(&self) -> $freq {
                 self.frequency_scaling
@@ -105,54 +105,79 @@ macro_rules! impl_fbm {
                 self.persistance
             }
             pub fn num_octaves(&self) -> usize {
-                self.noise_octaves.num_octaves()
+                self.octaves.len()
             }
-            pub fn octaves(&self) -> &OctaveNoise<$noise<PermutedGradientTable<$vector>, P>> {
-                &self.noise_octaves
-            }
-
-            fn make_default_gradient_provider<R: Rng + Clone>(rng: &mut R, size: u32) -> PermutedGradientTable<$vector> {
-                let mut builder = $builder::new(rng.clone());
-                PermutedGradientTable::new(rng, &mut builder, size)
+            pub fn octaves(&self) -> &Vec<$noise<PermutedGradientTable<$vector>, P>> {
+                &self.octaves
             }
 
+            fn make_default_gradient_provider(&mut self, size: u32)
+                -> PermutedGradientTable<$vector>
+            {
+                let mut builder = $builder::new(self.rng.clone());
+                PermutedGradientTable::new(&mut self.rng, &mut builder, size)
+            }
 
+            fn build_noise(&mut self, num_octaves: usize) {
+                let mut octaves = Vec::with_capacity(num_octaves);
+
+                let mut frequency = self.frequency().unwrap();
+                for _ in 0..num_octaves {
+                    let octave = $noise::new(frequency, self.make_default_gradient_provider(256))
+                        .with_interpolator(self.interp.clone());
+                    octaves.push(octave);
+
+                    frequency = frequency.to_tuple().apply(
+                        self.frequency_scaling().to_tuple().clone(), |f, s| f * s).unwrap();
+                }
+
+                self.octaves = octaves;
+            }
+
+            fn set_new_noise_frequencies(&mut self) {
+                let new_octaves = Vec::with_capacity(self.num_octaves());
+                let octaves = mem::replace(&mut self.octaves, new_octaves);
+                let mut frequency = self.frequency();
+
+                for o in octaves.into_iter() {
+                    self.octaves.push(o.with_frequency(frequency.to_tuple()));
+                    frequency = frequency.apply(
+                        self.frequency_scaling().to_tuple().clone(), |f, s| f * s);
+                }
+            }
         }
-        impl<P> $name<P>
+        impl<P, R> Noise for $name<P, R>
         where P: InterpolationFunction + Clone,
-        {
-            fn build_noise<R: Rng + Clone>(&mut self, rng: &mut R, num_octaves: usize) {
-                let octaves = build_geometric_fractal_noise(
-                    self.frequency.to_tuple(),
-                    num_octaves as u32,
-                    self.frequency_scaling.to_tuple(),
-                    self.persistance,
-                    &mut |_, freq, _| {
-                        let f: $dim = freq;
-                        $noise::new(f.unwrap(),
-                            Self::make_default_gradient_provider(rng, 256)).with_interpolator(self.interp.clone())
-                    }
-                );
-                self.noise_octaves = octaves;
-            }
-        }
-
-        impl<P> Noise for $name<P>
-        where P: InterpolationFunction
+              R: Rng + Clone,
         {
             type IndexType = $point;
             type DimType = $dim;
 
             fn value_at(&self, pos: Self::IndexType) -> f64 {
-                self.noise_octaves.value_at(pos)
+                let amplitude_multiplier: f64 = 1.0
+                    / (0..self.num_octaves())
+                        .map(|x| 1.0 / (self.persistance.powi(x as i32)))
+                        .sum::<f64>();
+
+                let mut amplitude = amplitude_multiplier;
+                let mut val = 0.0;
+                for o in &self.octaves {
+                    let octave_val = o.value_at(pos);
+                    let scaled_val = octave_val * amplitude;
+
+                    val += scaled_val;
+
+                    amplitude /= self.persistance;
+                }
+
+                val
             }
             fn frequency(&self) -> Self::DimType {
-                self.noise_octaves.frequency()
+                self.frequency.to_tuple()
             }
         }
-    )
+    );
 }
-*/
 
 impl_fbm!(
     Fbm1d,

@@ -63,8 +63,8 @@ where
 {
     pub fn new(frequency: f64, gradients: G) -> Perlin1d<G, DefaultInterpolator> {
         if let Some(dim) = gradients.dimensions() {
-            assert!((frequency,) <= size_tuple_to_frequency!(dim, 0)
-                    , "The gradient provider has a smaller maximum size than the requested noise frequency.");
+            assert!((frequency,) <= size_tuple_to_frequency!(dim, 0),
+                "The gradient provider has a smaller maximum size than the requested noise frequency.");
         }
         Perlin1d {
             frequency,
@@ -114,7 +114,7 @@ where
 {
     fn with_frequency(self, frequency: Self::DimType) -> Self {
         if let Some(dim) = self.gradients.dimensions() {
-            assert!(frequency <= size_tuple_to_frequency!(dim, 0), 
+            assert!(frequency <= size_tuple_to_frequency!(dim, 0),
                 "The gradient provider has a smaller maximum size than the requested noise frequency.");
         }
         Self {
@@ -259,7 +259,7 @@ where
 {
     fn with_frequency(self, frequency: Self::DimType) -> Self {
         if let Some(dim) = self.gradients.dimensions() {
-            assert!(frequency <= size_tuple_to_frequency!(dim, (0, 1)), 
+            assert!(frequency <= size_tuple_to_frequency!(dim, (0, 1)),
                 "The gradient provider has a smaller maximum size than the requested noise frequency.");
         }
         Self {
@@ -406,7 +406,7 @@ where
 {
     fn with_frequency(self, frequency: Self::DimType) -> Self {
         if let Some(dim) = self.gradients.dimensions() {
-            assert!(frequency <= size_tuple_to_frequency!(dim, (0, 1, 2)), 
+            assert!(frequency <= size_tuple_to_frequency!(dim, (0, 1, 2)),
                 "The gradient provider has a smaller maximum size than the requested noise frequency.");
         }
         Self {
