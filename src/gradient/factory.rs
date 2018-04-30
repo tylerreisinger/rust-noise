@@ -50,7 +50,7 @@ where
     }
 }
 
-impl<'a, B, R> GradientFactory<f64, (f64,)> for GridGradientFactory<'a, B, R>
+impl<'a, B, R> GradientFactory<f64, f64> for GridGradientFactory<'a, B, R>
 where
     B: GradientBuilder<Output = f64> + 'a,
     R: Rng + 'a,
@@ -58,9 +58,9 @@ where
     type Index = Point1<u32>;
     type Output = Grid1d<f64>;
 
-    fn build(&mut self, _: u32, frequency: (f64,)) -> Grid1d<f64> {
-        let dims = ((frequency.0.ceil() + 1.0) as u32,);
-        Grid1d::build_grid(dims.0, self.builder)
+    fn build(&mut self, _: u32, frequency: f64) -> Grid1d<f64> {
+        let dims = (frequency.ceil() + 1.0) as u32;
+        Grid1d::build_grid(dims, self.builder)
     }
 }
 impl<'a, B, R> GradientFactory<Vector2<f64>, (f64, f64)> for GridGradientFactory<'a, B, R>
@@ -128,7 +128,7 @@ where
     }
 }
 
-impl<'a, B, R> GradientFactory<f64, (f64,)> for RandomPermutationGradientFactory<'a, B, R>
+impl<'a, B, R> GradientFactory<f64, f64> for RandomPermutationGradientFactory<'a, B, R>
 where
     B: GradientBuilder<Output = f64> + 'a,
     R: Rng + 'a,
@@ -136,7 +136,7 @@ where
     type Index = Point1<u32>;
     type Output = PermutedGradientTable<f64>;
 
-    fn build(&mut self, octave: u32, _: (f64,)) -> PermutedGradientTable<f64> {
+    fn build(&mut self, octave: u32, _: f64) -> PermutedGradientTable<f64> {
         PermutedGradientTable::new(
             &mut self.rng,
             self.builder,
@@ -190,11 +190,11 @@ where
     }
 }
 
-impl GradientFactory<f64, (f64,)> for PermutationGradientFactory<f64> {
+impl GradientFactory<f64, f64> for PermutationGradientFactory<f64> {
     type Index = Point1<u32>;
     type Output = PermutedGradientTable<f64>;
 
-    fn build(&mut self, _: u32, _: (f64,)) -> PermutedGradientTable<f64> {
+    fn build(&mut self, _: u32, _: f64) -> PermutedGradientTable<f64> {
         self.table.clone()
     }
 }

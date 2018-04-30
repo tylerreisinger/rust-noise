@@ -121,14 +121,13 @@ macro_rules! impl_fbm {
             fn build_noise(&mut self, num_octaves: usize) {
                 let mut octaves = Vec::with_capacity(num_octaves);
 
-                let mut frequency = self.frequency().unwrap();
+                let mut frequency = self.frequency();
                 for _ in 0..num_octaves {
                     let octave = $noise::new(frequency, self.make_default_gradient_provider(256))
                         .with_interpolator(self.interp.clone());
                     octaves.push(octave);
 
-                    frequency = frequency.to_tuple().apply(
-                        self.frequency_scaling().to_tuple().clone(), |f, s| f * s).unwrap();
+                    frequency = frequency.apply(self.frequency_scaling().clone(), |f, s| f * s);
                 }
 
                 self.octaves = octaves;
@@ -140,9 +139,9 @@ macro_rules! impl_fbm {
                 let mut frequency = self.frequency();
 
                 for o in octaves.into_iter() {
-                    self.octaves.push(o.with_frequency(frequency.to_tuple()));
+                    self.octaves.push(o.with_frequency(frequency));
                     frequency = frequency.apply(
-                        self.frequency_scaling().to_tuple().clone(), |f, s| f * s);
+                        self.frequency_scaling().clone(), |f, s| f * s);
                 }
             }
         }
@@ -173,7 +172,7 @@ macro_rules! impl_fbm {
                 val
             }
             fn frequency(&self) -> Self::DimType {
-                self.frequency.to_tuple()
+                self.frequency
             }
         }
     );
@@ -182,7 +181,7 @@ macro_rules! impl_fbm {
 impl_fbm!(
     Fbm1d,
     f64,
-    (f64,),
+    f64,
     RandomGradientBuilder1d,
     Perlin1d,
     f64,

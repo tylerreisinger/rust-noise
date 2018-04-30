@@ -19,10 +19,8 @@ macro_rules! size_tuple_to_frequency {
         ),*
         )
     );
-    ($name:ident, $idx:tt) => (
-        (
-            f64::from($name.$idx),
-        )
+    ($name:ident) => (
+        f64::from($name)
     );
 }
 
@@ -59,11 +57,11 @@ where
 
 impl<G> Perlin1d<G, DefaultInterpolator>
 where
-    G: GradientProvider<Point1<u32>, DimType = (u32,), Output = f64>,
+    G: GradientProvider<Point1<u32>, DimType = u32, Output = f64>,
 {
     pub fn new(frequency: f64, gradients: G) -> Perlin1d<G, DefaultInterpolator> {
         if let Some(dim) = gradients.dimensions() {
-            assert!((frequency,) <= size_tuple_to_frequency!(dim, 0),
+            assert!(frequency <= size_tuple_to_frequency!(dim),
                 "The gradient provider has a smaller maximum size than the requested noise frequency.");
         }
         Perlin1d {
@@ -82,7 +80,7 @@ where
     ) -> OctaveNoise<Perlin1d<G, DefaultInterpolator>>
     where
         <Self as Noise>::DimType: TupleUtil<f64>,
-        F: GradientFactory<f64, (f64,), Index = Point1<u32>, Output = G>,
+        F: GradientFactory<f64, f64, Index = Point1<u32>, Output = G>,
     {
         build_geometric_fractal_noise(
             initial_frequency,
@@ -91,7 +89,7 @@ where
             persistance,
             &mut move |n, frequency, _| {
                 let g = gradient_factory.build(n, frequency);
-                Perlin1d::new(frequency.0, g)
+                Perlin1d::new(frequency, g)
             },
         )
     }
@@ -109,16 +107,16 @@ impl Perlin1d<Grid1d<f64>, DefaultInterpolator> {
 
 impl<G, P> WithFrequency for Perlin1d<G, P>
 where
-    G: GradientProvider<Point1<u32>, DimType = (u32,), Output = f64>,
+    G: GradientProvider<Point1<u32>, DimType = u32, Output = f64>,
     P: InterpolationFunction,
 {
     fn with_frequency(self, frequency: Self::DimType) -> Self {
         if let Some(dim) = self.gradients.dimensions() {
-            assert!(frequency <= size_tuple_to_frequency!(dim, 0),
+            assert!(frequency <= size_tuple_to_frequency!(dim),
                 "The gradient provider has a smaller maximum size than the requested noise frequency.");
         }
         Self {
-            frequency: frequency.0,
+            frequency: frequency,
             ..self
         }
     }
@@ -126,7 +124,7 @@ where
 
 impl<G, P> Perlin1d<G, P>
 where
-    G: GradientProvider<Point1<u32>, DimType = (u32,), Output = f64>,
+    G: GradientProvider<Point1<u32>, DimType = u32, Output = f64>,
     P: InterpolationFunction,
 {
     pub fn with_interpolator<P2>(self, interpolator: P2) -> Perlin1d<G, P2>
@@ -147,7 +145,7 @@ where
     P: InterpolationFunction,
 {
     type IndexType = Point1<f64>;
-    type DimType = (f64,);
+    type DimType = f64;
 
     fn value_at(&self, pos: f64) -> f64 {
         let cell_pos = pos * self.width();
@@ -178,8 +176,8 @@ where
         Lerp::lerp(values[0], values[1], interp_coeff) * 2.0
     }
 
-    fn frequency(&self) -> (f64,) {
-        (self.frequency,)
+    fn frequency(&self) -> f64 {
+        self.frequency
     }
 }
 

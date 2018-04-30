@@ -43,12 +43,12 @@ where
     T: Clone,
 {
     type Output = T;
-    type DimType = (u32,);
+    type DimType = u32;
     fn get_gradient(&self, index: Point1<u32>) -> &Self::Output {
         &self[index as usize]
     }
 
     fn dimensions(&self) -> Option<Self::DimType> {
-        Some((self.len() as u32,))
+        Some(self.len() as u32)
     }
 }

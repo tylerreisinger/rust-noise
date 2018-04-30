@@ -70,7 +70,7 @@ where
     G: Clone,
 {
     type Output = G;
-    type DimType = (u32,);
+    type DimType = u32;
 
     #[inline]
     fn get_gradient(&self, index: Point1<u32>) -> &G {
@@ -214,7 +214,7 @@ where
     G: Clone,
 {
     type Output = G;
-    type DimType = (u32,);
+    type DimType = u32;
 
     #[inline]
     fn get_gradient(&self, index: Point1<u32>) -> &G {

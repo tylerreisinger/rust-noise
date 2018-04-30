@@ -22,9 +22,9 @@ pub trait Noise {
     fn frequency(&self) -> Self::DimType;
 }
 
-pub trait Noise1d: Noise<IndexType = Point1<f64>, DimType = (f64,)> + Sized {
+pub trait Noise1d: Noise<IndexType = Point1<f64>, DimType = f64> + Sized {
     fn width(&self) -> f64 {
-        self.frequency().0
+        self.frequency()
     }
 
     fn extend(self) -> Extension2d<Self> {
@@ -110,7 +110,7 @@ where
 
 impl<N> Noise1d for N
 where
-    N: Noise<IndexType = f64, DimType = (f64,)>,
+    N: Noise<IndexType = Point1<f64>, DimType = f64>,
 {
 }
 impl<N> Noise2d for N
@@ -207,6 +207,21 @@ pub trait TupleMap<T, U>: TupleUtil<T> {
     fn map<F>(self, f: F) -> Self::Output
     where
         F: Fn(T) -> U;
+}
+
+impl TupleUtil<f64> for f64 {
+    fn max(&self, rhs: &f64) -> f64 {
+        f64::max(*self, *rhs)
+    }
+    fn saturate(val: f64) -> f64 {
+        val
+    }
+    fn apply<F>(self, rhs: Self, f: F) -> Self
+    where
+        F: Fn(f64, f64) -> f64,
+    {
+        f(self, rhs)
+    }
 }
 
 impl TupleUtil<f64> for (f64,) {
