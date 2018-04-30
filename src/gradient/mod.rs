@@ -33,7 +33,7 @@ pub trait GradientProvider<I> {
     type DimType;
     fn get_gradient(&self, index: I) -> &Self::Output;
 
-    fn dimensions(&self) -> Option<Self::DimType> {
+    fn max_dimensions(&self) -> Option<Self::DimType> {
         None
     }
 }
@@ -48,7 +48,7 @@ where
         &self[index as usize]
     }
 
-    fn dimensions(&self) -> Option<Self::DimType> {
+    fn max_dimensions(&self) -> Option<Self::DimType> {
         Some(self.len() as u32)
     }
 }

@@ -1,7 +1,6 @@
 use std::mem;
 
-use noise::{Noise, Perlin1d, Perlin2d, Perlin3d, Point1, Point2, Point3, ToTuple, TupleUtil,
-            WithFrequency};
+use noise::{Noise, Perlin1d, Perlin2d, Perlin3d, Point1, Point2, Point3, TupleUtil, WithFrequency};
 use interpolate::{self, InterpolationFunction};
 use gradient::{PermutedGradientTable, RandomGradientBuilder1d, RandomGradientBuilder2d,
                RandomGradientBuilder3d};
@@ -69,7 +68,7 @@ macro_rules! impl_fbm {
 
             pub fn with_frequency(self, frequency: $dim) -> Self {
                 let mut new = $name {
-                    frequency: frequency.unwrap(),
+                    frequency: frequency,
                     ..self
                 };
                 new.set_new_noise_frequencies();
@@ -77,7 +76,7 @@ macro_rules! impl_fbm {
             }
             pub fn with_frequency_scaling(self, frequency_scaling: $dim) -> Self {
                 let mut new = $name {
-                    frequency_scaling: frequency_scaling.unwrap(),
+                    frequency_scaling: frequency_scaling,
                     ..self
                 };
                 new.set_new_noise_frequencies();

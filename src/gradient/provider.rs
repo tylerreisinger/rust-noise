@@ -78,7 +78,7 @@ where
         unsafe { self.table.get_unchecked(idx) }
     }
 
-    fn dimensions(&self) -> Option<Self::DimType> {
+    fn max_dimensions(&self) -> Option<Self::DimType> {
         None
     }
 }
@@ -220,7 +220,7 @@ where
     fn get_gradient(&self, index: Point1<u32>) -> &G {
         self.table.get_gradient(self.index_1d(index))
     }
-    fn dimensions(&self) -> Option<Self::DimType> {
+    fn max_dimensions(&self) -> Option<Self::DimType> {
         None
     }
 }
@@ -235,7 +235,7 @@ where
     fn get_gradient(&self, index: Point2<u32>) -> &G {
         self.table.get_gradient(self.index_2d(index))
     }
-    fn dimensions(&self) -> Option<Self::DimType> {
+    fn max_dimensions(&self) -> Option<Self::DimType> {
         None
     }
 }
@@ -250,7 +250,7 @@ where
     fn get_gradient(&self, index: Point3<u32>) -> &G {
         self.table.get_gradient(self.index_3d(index))
     }
-    fn dimensions(&self) -> Option<Self::DimType> {
+    fn max_dimensions(&self) -> Option<Self::DimType> {
         None
     }
 }
@@ -265,7 +265,7 @@ where
     fn get_gradient(&self, index: Point4<u32>) -> &G {
         self.table.get_gradient(self.index_4d(index))
     }
-    fn dimensions(&self) -> Option<Self::DimType> {
+    fn max_dimensions(&self) -> Option<Self::DimType> {
         None
     }
 }
